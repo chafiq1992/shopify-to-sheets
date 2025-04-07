@@ -12,8 +12,9 @@ from googleapiclient.discovery import build
 
 # === CONFIG ===
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")
-SHEET_RANGE = "Sheet1!A2:K"
+SHEET_RANGE = "Sheet1!A:K"
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
+TRIGGER_TAG = "pc"
 
 # === GOOGLE SHEETS AUTH FROM BASE64 ENV ===
 encoded_credentials = os.getenv("GOOGLE_CREDENTIALS_BASE64")
@@ -33,7 +34,7 @@ sheets_service = build("sheets", "v4", credentials=credentials)
 # === FASTAPI APP ===
 app = FastAPI()
 
-# === HELPER FUNCTION ===
+# === HELPERS ===
 def verify_shopify_webhook(data, hmac_header):
     digest = hmac.new(
         SHOPIFY_WEBHOOK_SECRET.encode("utf-8"),
@@ -43,6 +44,46 @@ def verify_shopify_webhook(data, hmac_header):
     computed_hmac = base64.b64encode(digest).decode()
     return hmac.compare_digest(computed_hmac, hmac_header)
 
+def format_phone(phone: str) -> str:
+    if phone.startswith("+212"):
+        return "0" + phone[4:]
+    elif phone.startswith("212"):
+        return "0" + phone[3:]
+    return phone
+
+def delete_row_by_order_id(order_id: str):
+    sheet = sheets_service.spreadsheets()
+    result = sheet.values().get(
+        spreadsheetId=SPREADSHEET_ID,
+        range="Sheet1!A:K"
+    ).execute()
+
+    rows = result.get("values", [])
+    new_values = []
+    found = False
+
+    for row in rows:
+        if len(row) > 1 and row[1] == order_id:
+            found = True
+            continue  # Skip this row
+        new_values.append(row)
+
+    if found:
+        sheet.values().clear(
+            spreadsheetId=SPREADSHEET_ID,
+            range="Sheet1!A:K"
+        ).execute()
+
+        sheet.values().update(
+            spreadsheetId=SPREADSHEET_ID,
+            range="Sheet1!A1",
+            valueInputOption="USER_ENTERED",
+            body={"values": new_values}
+        ).execute()
+        print(f"🗑️ Deleted row for order ID: {order_id}")
+    else:
+        print(f"⚠️ No row found for order ID: {order_id}")
+
 # === WEBHOOK ENDPOINT ===
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(
@@ -51,62 +92,67 @@ async def webhook_orders_updated(
 ):
     body = await request.body()
 
-    # 🔒 Uncomment this to secure webhook from Shopify (after testing)
+    # ✅ Uncomment this when you're ready to go live
     # if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
     #     raise HTTPException(status_code=401, detail="Invalid HMAC")
 
     order = json.loads(body)
-
-    # Check if VIP tag exists (case-insensitive)
     tag_list = [t.strip().lower() for t in order.get("tags", "").split(",")]
-    if "vip" not in tag_list:
-        return JSONResponse(content={"skipped": True})
+    order_id = order.get("name", "")
 
-    try:
-        created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
-        order_id = order.get("name", "")
-        shipping_address = order.get("shipping_address", {})
+    if TRIGGER_TAG in tag_list:
+        try:
+            created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
+            shipping_address = order.get("shipping_address", {})
 
-        shipping_name = shipping_address.get("name", "")
-        shipping_phone = shipping_address.get("phone", "")
-        shipping_address1 = shipping_address.get("address1", "")
-        shipping_city = shipping_address.get("city", "")
-        total_price = order.get("total_price", "")
-        notes = order.get("note", "")
-        tags = order.get("tags", "")
-        line_items = ", ".join([f"{item['quantity']}x {item['title']}" for item in order.get("line_items", [])])
+            shipping_name = shipping_address.get("name", "")
+            shipping_phone = format_phone(shipping_address.get("phone", ""))
+            shipping_address1 = shipping_address.get("address1", "")
+            shipping_city = shipping_address.get("city", "")
+            total_price = order.get("total_price", "")
+            notes = order.get("note", "")
+            tags = order.get("tags", "")
+            line_items = ", ".join([f"{item['quantity']}x {item['title']}" for item in order.get("line_items", [])])
 
-        row = [
-            created_at,
-            order_id,
-            shipping_name,
-            shipping_phone,
-            shipping_address1,
-            shipping_city,
-            total_price,
-            line_items,
-            notes,
-            tags
-        ]
+            row = [
+                created_at,
+                order_id,
+                shipping_name,
+                shipping_phone,
+                shipping_address1,
+                shipping_city,
+                total_price,
+                line_items,
+                notes,
+                tags
+            ]
 
-        sheets_service.spreadsheets().values().append(
-            spreadsheetId=SPREADSHEET_ID,
-            range=SHEET_RANGE,
-            valueInputOption="USER_ENTERED",
-            body={"values": [row]}
-        ).execute()
+            # Check for duplicate
+            existing_orders = sheets_service.spreadsheets().values().get(
+                spreadsheetId=SPREADSHEET_ID,
+                range=SHEET_RANGE
+            ).execute().get("values", [])
 
-        print("✅ Row added to Google Sheet:", row)
+            order_ids = [r[1] for r in existing_orders if len(r) > 1]
 
-    except Exception as e:
-        print("❌ Error processing order:", e)
+            if order_id in order_ids:
+                print(f"⚠️ Order ID {order_id} already exists — skipping.")
+            else:
+                sheets_service.spreadsheets().values().append(
+                    spreadsheetId=SPREADSHEET_ID,
+                    range=SHEET_RANGE,
+                    valueInputOption="USER_ENTERED",
+                    body={"values": [row]}
+                ).execute()
+                print("✅ Row added to Google Sheet:", row)
+
+        except Exception as e:
+            print("❌ Error processing order:", e)
+
+    else:
+        delete_row_by_order_id(order_id)
 
     return JSONResponse(content={"success": True})
-
-# === MANUAL TRIGGER (OPTIONAL) ===
-@app.get("/export-customers")
-async def manual_export():
-    return {"message": "Manual export not implemented yet"}
 
 # === HEALTH CHECK ENDPOINT ===
 @app.get("/ping")
