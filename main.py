@@ -12,7 +12,7 @@ from googleapiclient.discovery import build
 
 # === CONFIG ===
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")
-SHEET_RANGE = "Sheet1!A:J"  # A to J = 10 columns
+SHEET_RANGE = "Sheet1!A:J"  # Sheet always uses columns A–J
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
 TRIGGER_TAG = "pc"
 
@@ -101,7 +101,7 @@ async def webhook_orders_updated(
 ):
     body = await request.body()
 
-    # ✅ Uncomment this when you're ready to go live
+    # ✅ Uncomment to enable security
     # if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
     #     raise HTTPException(status_code=401, detail="Invalid HMAC")
 
@@ -139,11 +139,10 @@ async def webhook_orders_updated(
                 tags
             ]
 
-            # ✅ Always ensure row has exactly 10 columns (A–J)
-            while len(row) < 10:
-                row.append("")
+            # ✅ Ensure row has exactly 10 columns (A to J)
+            row = (row + [""] * 10)[:10]
 
-            # Check for duplicates
+            # Check for duplicate
             existing_orders = sheets_service.spreadsheets().values().get(
                 spreadsheetId=SPREADSHEET_ID,
                 range=SHEET_RANGE
@@ -157,8 +156,9 @@ async def webhook_orders_updated(
             else:
                 sheets_service.spreadsheets().values().append(
                     spreadsheetId=SPREADSHEET_ID,
-                    range=SHEET_RANGE,
+                    range="Sheet1!A1",  # Always append from column A
                     valueInputOption="USER_ENTERED",
+                    insertDataOption="INSERT_ROWS",
                     body={"values": [row]}
                 ).execute()
                 print("✅ Row added to Google Sheet:", row)
