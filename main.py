@@ -55,7 +55,7 @@ def delete_row_by_order_id(order_id: str):
     sheet = sheets_service.spreadsheets()
     result = sheet.values().get(
         spreadsheetId=SPREADSHEET_ID,
-        range="Sheet1!A:K"
+        range="Sheet1!A:A"
     ).execute()
 
     rows = result.get("values", [])
