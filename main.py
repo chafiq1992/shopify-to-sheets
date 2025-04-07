@@ -67,23 +67,22 @@ async def webhook_orders_updated(
 
     tag_list = [t.strip().lower() for t in order.tags.split(",")]
     if "vip" in tag_list:
-        row = [
-            order.customer.get("first_name", ""),
-            order.customer.get("last_name", ""),
-            order.customer.get("email", ""),
-            order.customer.get("phone", ""),
-            order.id,
-            order.tags,
-            order.created_at,
-        ]
-        sheets_service.spreadsheets().values().append(
-            spreadsheetId=SPREADSHEET_ID,
-            range=SHEET_RANGE,
-            valueInputOption="USER_ENTERED",
-            body={"values": [row]}
-        ).execute()
-
-    return JSONResponse(content={"success": True})
+    row = [
+        order.customer.get("first_name", ""),
+        order.customer.get("last_name", ""),
+        order.customer.get("email", ""),
+        order.customer.get("phone", ""),
+        order.id,
+        order.tags,
+        order.created_at,
+    ]
+    sheets_service.spreadsheets().values().append(
+        spreadsheetId=SPREADSHEET_ID,
+        range=SHEET_RANGE,
+        valueInputOption="USER_ENTERED",
+        body={"values": [row]}
+    ).execute()
+    print("✅ Row added to Google Sheet:", row)
 
 # === MANUAL TRIGGER (OPTIONAL) ===
 @app.get("/export-customers")
