@@ -65,7 +65,8 @@ async def webhook_orders_updated(
     data = json.loads(body)
     order = ShopifyOrderWebhook(**data)
 
-    if "VIP" in order.tags:
+    tag_list = [t.strip().lower() for t in order.tags.split(",")]
+    if "vip" in tag_list:
         row = [
             order.customer.get("first_name", ""),
             order.customer.get("last_name", ""),
