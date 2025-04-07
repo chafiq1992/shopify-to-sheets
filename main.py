@@ -58,34 +58,41 @@ async def webhook_orders_updated(
 ):
     body = await request.body()
 
-# HMAC check temporarily disabled for testing
-# if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
-#     raise HTTPException(status_code=401, detail="Invalid HMAC")
+    # 🔒 Uncomment to enable webhook security
+    # if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
+    #     raise HTTPException(status_code=401, detail="Invalid HMAC")
 
     data = json.loads(body)
     order = ShopifyOrderWebhook(**data)
 
     tag_list = [t.strip().lower() for t in order.tags.split(",")]
+
     if "vip" in tag_list:
-    row = [
-        order.customer.get("first_name", ""),
-        order.customer.get("last_name", ""),
-        order.customer.get("email", ""),
-        order.customer.get("phone", ""),
-        order.id,
-        order.tags,
-        order.created_at,
-    ]
-    sheets_service.spreadsheets().values().append(
-        spreadsheetId=SPREADSHEET_ID,
-        range=SHEET_RANGE,
-        valueInputOption="USER_ENTERED",
-        body={"values": [row]}
-    ).execute()
-    print("✅ Row added to Google Sheet:", row)
+        row = [
+            order.customer.get("first_name", ""),
+            order.customer.get("last_name", ""),
+            order.customer.get("email", ""),
+            order.customer.get("phone", ""),
+            order.id,
+            order.tags,
+            order.created_at,
+        ]
+        sheets_service.spreadsheets().values().append(
+            spreadsheetId=SPREADSHEET_ID,
+            range=SHEET_RANGE,
+            valueInputOption="USER_ENTERED",
+            body={"values": [row]}
+        ).execute()
+        print("✅ Row added to Google Sheet:", row)
+
+    return JSONResponse(content={"success": True})
 
 # === MANUAL TRIGGER (OPTIONAL) ===
 @app.get("/export-customers")
 async def manual_export():
-    # You can add manual logic here to export customers
-    return {"message": "Not implemented yet"}
+    return {"message": "Manual export not implemented yet"}
+
+# === HEALTH CHECK ENDPOINT ===
+@app.get("/ping")
+async def ping():
+    return {"status": "ok"}
