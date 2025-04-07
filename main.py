@@ -4,15 +4,15 @@ import hashlib
 import hmac
 import base64
 import tempfile
+from datetime import datetime
 from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 # === CONFIG ===
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")
-SHEET_RANGE = "Sheet1!A2:G"
+SHEET_RANGE = "Sheet1!A2:K"
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
 
 # === GOOGLE SHEETS AUTH FROM BASE64 ENV ===
@@ -43,13 +43,6 @@ def verify_shopify_webhook(data, hmac_header):
     computed_hmac = base64.b64encode(digest).decode()
     return hmac.compare_digest(computed_hmac, hmac_header)
 
-# === PAYLOAD MODEL ===
-class ShopifyOrderWebhook(BaseModel):
-    id: int
-    created_at: str
-    tags: str
-    customer: dict
-
 # === WEBHOOK ENDPOINT ===
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(
@@ -58,32 +51,55 @@ async def webhook_orders_updated(
 ):
     body = await request.body()
 
-    # 🔒 Uncomment to enable webhook security
+    # 🔒 Uncomment this to secure webhook from Shopify (after testing)
     # if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
     #     raise HTTPException(status_code=401, detail="Invalid HMAC")
 
-    data = json.loads(body)
-    order = ShopifyOrderWebhook(**data)
+    order = json.loads(body)
 
-    tag_list = [t.strip().lower() for t in order.tags.split(",")]
+    # Check if VIP tag exists (case-insensitive)
+    tag_list = [t.strip().lower() for t in order.get("tags", "").split(",")]
+    if "vip" not in tag_list:
+        return JSONResponse(content={"skipped": True})
 
-    if "vip" in tag_list:
+    try:
+        created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
+        order_id = order.get("name", "")
+        shipping_address = order.get("shipping_address", {})
+
+        shipping_name = shipping_address.get("name", "")
+        shipping_phone = shipping_address.get("phone", "")
+        shipping_address1 = shipping_address.get("address1", "")
+        shipping_city = shipping_address.get("city", "")
+        total_price = order.get("total_price", "")
+        notes = order.get("note", "")
+        tags = order.get("tags", "")
+        line_items = ", ".join([f"{item['quantity']}x {item['title']}" for item in order.get("line_items", [])])
+
         row = [
-            order.customer.get("first_name", ""),
-            order.customer.get("last_name", ""),
-            order.customer.get("email", ""),
-            order.customer.get("phone", ""),
-            order.id,
-            order.tags,
-            order.created_at,
+            created_at,
+            order_id,
+            shipping_name,
+            shipping_phone,
+            shipping_address1,
+            shipping_city,
+            total_price,
+            line_items,
+            notes,
+            tags
         ]
+
         sheets_service.spreadsheets().values().append(
             spreadsheetId=SPREADSHEET_ID,
             range=SHEET_RANGE,
             valueInputOption="USER_ENTERED",
             body={"values": [row]}
         ).execute()
+
         print("✅ Row added to Google Sheet:", row)
+
+    except Exception as e:
+        print("❌ Error processing order:", e)
 
     return JSONResponse(content={"success": True})
 
