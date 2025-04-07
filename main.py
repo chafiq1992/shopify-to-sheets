@@ -12,7 +12,7 @@ from googleapiclient.discovery import build
 
 # === CONFIG ===
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")
-SHEET_RANGE = "Sheet1!A:K"
+SHEET_RANGE = "Sheet1!A:J"  # A to J = 10 columns
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
 TRIGGER_TAG = "pc"
 
@@ -55,7 +55,7 @@ def delete_row_by_order_id(order_id: str):
     sheet = sheets_service.spreadsheets()
     result = sheet.values().get(
         spreadsheetId=SPREADSHEET_ID,
-        range="Sheet1!A:K"
+        range="Sheet1!A:J"
     ).execute()
 
     rows = result.get("values", [])
@@ -78,7 +78,7 @@ def delete_row_by_order_id(order_id: str):
     if found:
         sheets_service.spreadsheets().values().clear(
             spreadsheetId=SPREADSHEET_ID,
-            range="Sheet1!A2:K"
+            range="Sheet1!A2:J"
         ).execute()
 
         if new_data_rows:
@@ -138,6 +138,10 @@ async def webhook_orders_updated(
                 notes,
                 tags
             ]
+
+            # ✅ Always ensure row has exactly 10 columns (A–J)
+            while len(row) < 10:
+                row.append("")
 
             # Check for duplicates
             existing_orders = sheets_service.spreadsheets().values().get(
