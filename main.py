@@ -55,31 +55,40 @@ def delete_row_by_order_id(order_id: str):
     sheet = sheets_service.spreadsheets()
     result = sheet.values().get(
         spreadsheetId=SPREADSHEET_ID,
-        range="Sheet1!A:A"
+        range="Sheet1!A:K"
     ).execute()
 
     rows = result.get("values", [])
-    new_values = []
+    if not rows:
+        print("⚠️ Sheet is empty.")
+        return
+
+    header = rows[0]
+    data_rows = rows[1:]
+
+    new_data_rows = []
     found = False
 
-    for row in rows:
+    for row in data_rows:
         if len(row) > 1 and row[1] == order_id:
             found = True
-            continue  # Skip this row
-        new_values.append(row)
+            continue
+        new_data_rows.append(row)
 
     if found:
-        sheet.values().clear(
+        sheets_service.spreadsheets().values().clear(
             spreadsheetId=SPREADSHEET_ID,
-            range="Sheet1!A:K"
+            range="Sheet1!A2:K"
         ).execute()
 
-        sheet.values().update(
-            spreadsheetId=SPREADSHEET_ID,
-            range="Sheet1!A1",
-            valueInputOption="USER_ENTERED",
-            body={"values": new_values}
-        ).execute()
+        if new_data_rows:
+            sheets_service.spreadsheets().values().update(
+                spreadsheetId=SPREADSHEET_ID,
+                range="Sheet1!A2",
+                valueInputOption="USER_ENTERED",
+                body={"values": new_data_rows}
+            ).execute()
+
         print(f"🗑️ Deleted row for order ID: {order_id}")
     else:
         print(f"⚠️ No row found for order ID: {order_id}")
@@ -112,7 +121,10 @@ async def webhook_orders_updated(
             total_price = order.get("total_price", "")
             notes = order.get("note", "")
             tags = order.get("tags", "")
-            line_items = ", ".join([f"{item['quantity']}x {item['title']}" for item in order.get("line_items", [])])
+            line_items = ", ".join([
+                f"{item['quantity']}x {item.get('variant_title', item['title'])}"
+                for item in order.get("line_items", [])
+            ])
 
             row = [
                 created_at,
@@ -127,16 +139,17 @@ async def webhook_orders_updated(
                 tags
             ]
 
-            # Check for duplicate
+            # Check for duplicates
             existing_orders = sheets_service.spreadsheets().values().get(
                 spreadsheetId=SPREADSHEET_ID,
                 range=SHEET_RANGE
             ).execute().get("values", [])
 
-            order_ids = [r[1] for r in existing_orders if len(r) > 1]
+            order_ids = [r[1] for r in existing_orders[1:] if len(r) > 1]
 
             if order_id in order_ids:
-                print(f"⚠️ Order ID {order_id} already exists — skipping.")
+                print(f"⚠️ Order ID {order_id} already exists — skipping. "
+                      f"Name: {shipping_name}, Phone: {shipping_phone}")
             else:
                 sheets_service.spreadsheets().values().append(
                     spreadsheetId=SPREADSHEET_ID,
