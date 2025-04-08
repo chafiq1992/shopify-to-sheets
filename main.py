@@ -11,10 +11,13 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 # === CONFIG ===
-SPREADSHEET_ID = os.getenv("SPREADSHEET_ID", "")
-SHEET_RANGE = "Sheet1!A:J"  # Sheet always uses columns A–J
-SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
 TRIGGER_TAG = "pc"
+SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
+
+SHOP_DOMAIN_TO_SHEET = {
+    "fdd92b-2e.myshopify.com": os.getenv("SHEET_IRRANOVA_ID"),
+    "nouralibas.myshopify.com": os.getenv("SHEET_IRRAKIDS_ID")
+}
 
 # === GOOGLE SHEETS AUTH FROM BASE64 ENV ===
 encoded_credentials = os.getenv("GOOGLE_CREDENTIALS_BASE64")
@@ -51,10 +54,9 @@ def format_phone(phone: str) -> str:
         return "0" + phone[3:]
     return phone
 
-def delete_row_by_order_id(order_id: str):
-    sheet = sheets_service.spreadsheets()
-    result = sheet.values().get(
-        spreadsheetId=SPREADSHEET_ID,
+def delete_row_by_order_id(spreadsheet_id, order_id):
+    result = sheets_service.spreadsheets().values().get(
+        spreadsheetId=spreadsheet_id,
         range="Sheet1!A:J"
     ).execute()
 
@@ -65,7 +67,6 @@ def delete_row_by_order_id(order_id: str):
 
     header = rows[0]
     data_rows = rows[1:]
-
     new_data_rows = []
     found = False
 
@@ -77,13 +78,13 @@ def delete_row_by_order_id(order_id: str):
 
     if found:
         sheets_service.spreadsheets().values().clear(
-            spreadsheetId=SPREADSHEET_ID,
+            spreadsheetId=spreadsheet_id,
             range="Sheet1!A2:J"
         ).execute()
 
         if new_data_rows:
             sheets_service.spreadsheets().values().update(
-                spreadsheetId=SPREADSHEET_ID,
+                spreadsheetId=spreadsheet_id,
                 range="Sheet1!A2",
                 valueInputOption="USER_ENTERED",
                 body={"values": new_data_rows}
@@ -97,11 +98,16 @@ def delete_row_by_order_id(order_id: str):
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(
     request: Request,
+    x_shopify_shop_domain: str = Header(None),
     x_shopify_hmac_sha256: str = Header(None)
 ):
+    if not x_shopify_shop_domain or x_shopify_shop_domain not in SHOP_DOMAIN_TO_SHEET:
+        raise HTTPException(status_code=400, detail="Unknown or missing shop domain")
+
+    spreadsheet_id = SHOP_DOMAIN_TO_SHEET[x_shopify_shop_domain]
     body = await request.body()
 
-    # ✅ Uncomment to enable security
+    # Uncomment when going live
     # if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
     #     raise HTTPException(status_code=401, detail="Invalid HMAC")
 
@@ -138,36 +144,32 @@ async def webhook_orders_updated(
                 notes,
                 tags
             ]
+            row = (row + [""] * 10)[:10]  # Always A–J columns
 
-            # ✅ Ensure row has exactly 10 columns (A to J)
-            row = (row + [""] * 10)[:10]
-
-            # Check for duplicate
             existing_orders = sheets_service.spreadsheets().values().get(
-                spreadsheetId=SPREADSHEET_ID,
-                range=SHEET_RANGE
+                spreadsheetId=spreadsheet_id,
+                range="Sheet1!A:J"
             ).execute().get("values", [])
 
             order_ids = [r[1] for r in existing_orders[1:] if len(r) > 1]
 
             if order_id in order_ids:
-                print(f"⚠️ Order ID {order_id} already exists — skipping. "
-                      f"Name: {shipping_name}, Phone: {shipping_phone}")
+                print(f"⚠️ Order {order_id} already exists — skipping. Store: {x_shopify_shop_domain}")
             else:
                 sheets_service.spreadsheets().values().append(
-                    spreadsheetId=SPREADSHEET_ID,
-                    range="Sheet1!A1",  # Always append from column A
+                    spreadsheetId=spreadsheet_id,
+                    range="Sheet1!A1",
                     valueInputOption="USER_ENTERED",
                     insertDataOption="INSERT_ROWS",
                     body={"values": [row]}
                 ).execute()
-                print("✅ Row added to Google Sheet:", row)
+                print(f"✅ Row added to {x_shopify_shop_domain}:", row)
 
         except Exception as e:
             print("❌ Error processing order:", e)
 
     else:
-        delete_row_by_order_id(order_id)
+        delete_row_by_order_id(spreadsheet_id, order_id)
 
     return JSONResponse(content={"success": True})
 
