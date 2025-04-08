@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import base64
 import tempfile
+import difflib
 from datetime import datetime
 from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import JSONResponse
@@ -18,6 +19,15 @@ SHOP_DOMAIN_TO_SHEET = {
     "fdd92b-2e.myshopify.com": os.getenv("SHEET_IRRANOVA_ID"),
     "nouralibas.myshopify.com": os.getenv("SHEET_IRRAKIDS_ID")
 }
+
+CITY_LIST_PATH = "cities_bigdelivery.txt"
+
+# === LOAD CITIES ===
+def load_cities(filepath):
+    with open(filepath, "r", encoding="utf-8") as f:
+        return [line.strip().lower() for line in f if line.strip()]
+
+VALID_CITIES = load_cities(CITY_LIST_PATH)
 
 # === GOOGLE SHEETS AUTH FROM BASE64 ENV ===
 encoded_credentials = os.getenv("GOOGLE_CREDENTIALS_BASE64")
@@ -54,10 +64,24 @@ def format_phone(phone: str) -> str:
         return "0" + phone[3:]
     return phone
 
+def get_closest_city(input_city, address_hint=""):
+    input_city = input_city.lower().strip()
+    matches = difflib.get_close_matches(input_city, VALID_CITIES, n=1, cutoff=0.8)
+
+    if matches:
+        return matches[0], f"✅ Changed from '{input_city}' to '{matches[0].title()}'"
+
+    # Try matching using address context
+    for city in VALID_CITIES:
+        if city in address_hint.lower():
+            return city, f"✅ Guessed from address: '{address_hint}' → '{city.title()}'"
+
+    return input_city, f"🛑 Could not match: '{input_city}'"
+
 def delete_row_by_order_id(spreadsheet_id, order_id):
     result = sheets_service.spreadsheets().values().get(
         spreadsheetId=spreadsheet_id,
-        range="Sheet1!A:J"
+        range="Sheet1!A:K"
     ).execute()
 
     rows = result.get("values", [])
@@ -79,7 +103,7 @@ def delete_row_by_order_id(spreadsheet_id, order_id):
     if found:
         sheets_service.spreadsheets().values().clear(
             spreadsheetId=spreadsheet_id,
-            range="Sheet1!A2:J"
+            range="Sheet1!A2:K"
         ).execute()
 
         if new_data_rows:
@@ -107,7 +131,6 @@ async def webhook_orders_updated(
     spreadsheet_id = SHOP_DOMAIN_TO_SHEET[x_shopify_shop_domain]
     body = await request.body()
 
-    # Uncomment when going live
     # if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
     #     raise HTTPException(status_code=401, detail="Invalid HMAC")
 
@@ -123,7 +146,10 @@ async def webhook_orders_updated(
             shipping_name = shipping_address.get("name", "")
             shipping_phone = format_phone(shipping_address.get("phone", ""))
             shipping_address1 = shipping_address.get("address1", "")
-            shipping_city = shipping_address.get("city", "")
+            original_city = shipping_address.get("city", "")
+
+            corrected_city, correction_note = get_closest_city(original_city, shipping_address1)
+
             total_price = order.get("total_price", "")
             notes = order.get("note", "")
             tags = order.get("tags", "")
@@ -138,23 +164,26 @@ async def webhook_orders_updated(
                 shipping_name,
                 shipping_phone,
                 shipping_address1,
-                shipping_city,
+                corrected_city.title(),
                 total_price,
                 line_items,
                 notes,
-                tags
+                tags,
+                correction_note
             ]
-            row = (row + [""] * 10)[:10]  # Always A–J columns
+
+            # Ensure 11 columns (A–K including notes)
+            row = (row + [""] * 11)[:11]
 
             existing_orders = sheets_service.spreadsheets().values().get(
                 spreadsheetId=spreadsheet_id,
-                range="Sheet1!A:J"
+                range="Sheet1!A:K"
             ).execute().get("values", [])
 
             order_ids = [r[1] for r in existing_orders[1:] if len(r) > 1]
 
             if order_id in order_ids:
-                print(f"⚠️ Order {order_id} already exists — skipping. Store: {x_shopify_shop_domain}")
+                print(f"⚠️ Order ID {order_id} already exists — skipping.")
             else:
                 sheets_service.spreadsheets().values().append(
                     spreadsheetId=spreadsheet_id,
@@ -163,7 +192,7 @@ async def webhook_orders_updated(
                     insertDataOption="INSERT_ROWS",
                     body={"values": [row]}
                 ).execute()
-                print(f"✅ Row added to {x_shopify_shop_domain}:", row)
+                print("✅ Row added:", row)
 
         except Exception as e:
             print("❌ Error processing order:", e)
@@ -173,7 +202,7 @@ async def webhook_orders_updated(
 
     return JSONResponse(content={"success": True})
 
-# === HEALTH CHECK ENDPOINT ===
+# === HEALTH CHECK ===
 @app.get("/ping")
 async def ping():
     return {"status": "ok"}
