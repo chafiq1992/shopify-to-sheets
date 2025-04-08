@@ -20,13 +20,27 @@ SHOP_DOMAIN_TO_SHEET = {
     "nouralibas.myshopify.com": os.getenv("SHEET_IRRAKIDS_ID")
 }
 
+CITY_ALIAS_PATH = "city_aliases.json"
 CITY_LIST_PATH = "cities_bigdelivery.txt"
 
-# === LOAD CITIES ===
-def load_cities(filepath):
-    with open(filepath, "r", encoding="utf-8") as f:
-        return [line.strip().lower() for line in f if line.strip()]
+# === LOAD CITIES AND ALIASES ===
+def load_alias_map(filepath):
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"⚠️ Failed to load alias map: {e}")
+        return {}
 
+def load_cities(filepath):
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            return [line.strip().lower() for line in f if line.strip()]
+    except Exception as e:
+        print(f"⚠️ Failed to load cities list: {e}")
+        return []
+
+CITY_ALIASES = load_alias_map(CITY_ALIAS_PATH)
 VALID_CITIES = load_cities(CITY_LIST_PATH)
 
 # === GOOGLE SHEETS AUTH FROM BASE64 ENV ===
@@ -64,18 +78,26 @@ def format_phone(phone: str) -> str:
         return "0" + phone[3:]
     return phone
 
-def get_closest_city(input_city, address_hint=""):
-    input_city = input_city.lower().strip()
-    matches = difflib.get_close_matches(input_city, VALID_CITIES, n=1, cutoff=0.8)
+def get_corrected_city(input_city, address_hint=""):
+    city_clean = input_city.strip().lower()
 
+    # Step 1: Alias match
+    if city_clean in CITY_ALIASES:
+        corrected = CITY_ALIASES[city_clean]
+        return corrected, f"✅ Matched alias: '{input_city}' → '{corrected}'"
+
+    # Step 2: Fuzzy match
+    matches = difflib.get_close_matches(city_clean, VALID_CITIES, n=1, cutoff=0.85)
     if matches:
-        return matches[0], f"✅ Changed from '{input_city}' to '{matches[0].title()}'"
+        corrected = matches[0].title()
+        return corrected, f"✅ Fuzzy matched: '{input_city}' → '{corrected}'"
 
-    # Try matching using address context
+    # Step 3: Fallback - guess from address
     for city in VALID_CITIES:
         if city in address_hint.lower():
-            return city, f"✅ Guessed from address: '{address_hint}' → '{city.title()}'"
+            return city.title(), f"✅ Guessed from address: '{input_city}' → '{city.title()}'"
 
+    # Step 4: Fail
     return input_city, f"🛑 Could not match: '{input_city}'"
 
 def delete_row_by_order_id(spreadsheet_id, order_id):
@@ -89,7 +111,6 @@ def delete_row_by_order_id(spreadsheet_id, order_id):
         print("⚠️ Sheet is empty.")
         return
 
-    header = rows[0]
     data_rows = rows[1:]
     new_data_rows = []
     found = False
@@ -148,7 +169,7 @@ async def webhook_orders_updated(
             shipping_address1 = shipping_address.get("address1", "")
             original_city = shipping_address.get("city", "")
 
-            corrected_city, correction_note = get_closest_city(original_city, shipping_address1)
+            corrected_city, note = get_corrected_city(original_city, shipping_address1)
 
             total_price = order.get("total_price", "")
             notes = order.get("note", "")
@@ -164,15 +185,14 @@ async def webhook_orders_updated(
                 shipping_name,
                 shipping_phone,
                 shipping_address1,
-                corrected_city.title(),
+                corrected_city,
                 total_price,
                 line_items,
                 notes,
                 tags,
-                correction_note
+                note
             ]
 
-            # Ensure 11 columns (A–K including notes)
             row = (row + [""] * 11)[:11]
 
             existing_orders = sheets_service.spreadsheets().values().get(
