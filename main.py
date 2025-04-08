@@ -72,11 +72,21 @@ def verify_shopify_webhook(data, hmac_header):
     return hmac.compare_digest(computed_hmac, hmac_header)
 
 def format_phone(phone: str) -> str:
-    if phone.startswith("+212"):
-        return "0" + phone[4:]
-    elif phone.startswith("212"):
-        return "0" + phone[3:]
-    return phone
+    if not phone:
+        return ""
+
+    # Remove spaces, dashes, parentheses
+    cleaned = phone.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+
+    # Normalize to 0xxxxxxxxx
+    if cleaned.startswith("+212"):
+        return "0" + cleaned[4:]
+    elif cleaned.startswith("212"):
+        return "0" + cleaned[3:]
+    elif cleaned.startswith("0"):
+        return cleaned
+    else:
+        return cleaned  # fallback
 
 def get_corrected_city(input_city, address_hint=""):
     city_clean = input_city.strip().lower()
