@@ -23,7 +23,7 @@ SHOP_DOMAIN_TO_SHEET = {
 CITY_ALIAS_PATH = "city_aliases.json"
 CITY_LIST_PATH = "cities_bigdelivery.txt"
 
-# === LOAD CITIES AND ALIASES ===
+# === LOAD CITY ALIASES AND LIST ===
 def load_alias_map(filepath):
     try:
         with open(filepath, "r", encoding="utf-8") as f:
@@ -81,23 +81,19 @@ def format_phone(phone: str) -> str:
 def get_corrected_city(input_city, address_hint=""):
     city_clean = input_city.strip().lower()
 
-    # Step 1: Alias match
     if city_clean in CITY_ALIASES:
         corrected = CITY_ALIASES[city_clean]
         return corrected, f"✅ Matched alias: '{input_city}' → '{corrected}'"
 
-    # Step 2: Fuzzy match
     matches = difflib.get_close_matches(city_clean, VALID_CITIES, n=1, cutoff=0.85)
     if matches:
         corrected = matches[0].title()
         return corrected, f"✅ Fuzzy matched: '{input_city}' → '{corrected}'"
 
-    # Step 3: Fallback - guess from address
     for city in VALID_CITIES:
         if city in address_hint.lower():
             return city.title(), f"✅ Guessed from address: '{input_city}' → '{city.title()}'"
 
-    # Step 4: Fail
     return input_city, f"🛑 Could not match: '{input_city}'"
 
 def delete_row_by_order_id(spreadsheet_id, order_id):
@@ -152,10 +148,17 @@ async def webhook_orders_updated(
     spreadsheet_id = SHOP_DOMAIN_TO_SHEET[x_shopify_shop_domain]
     body = await request.body()
 
+    # Uncomment to activate HMAC verification in production
     # if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
     #     raise HTTPException(status_code=401, detail="Invalid HMAC")
 
     order = json.loads(body)
+
+    # ✅ Skip fulfilled or paid orders
+    if order.get("financial_status") not in ["pending", "authorized"] or order.get("fulfillment_status") not in [None, "unfulfilled"]:
+        print("⛔ Skipped: Order is already paid or fulfilled")
+        return JSONResponse(content={"skipped": True})
+
     tag_list = [t.strip().lower() for t in order.get("tags", "").split(",")]
     order_id = order.get("name", "")
 
