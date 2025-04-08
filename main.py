@@ -165,8 +165,8 @@ async def webhook_orders_updated(
     order = json.loads(body)
 
     # ✅ Skip fulfilled or paid orders
-    if order.get("financial_status") not in ["pending", "authorized"] or order.get("fulfillment_status") not in [None, "unfulfilled"]:
-        print("⛔ Skipped: Order is already paid or fulfilled")
+    if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
+        print("⛔ Skipped: Order is fulfilled, canceled or closed")
         return JSONResponse(content={"skipped": True})
 
     tag_list = [t.strip().lower() for t in order.get("tags", "").split(",")]
