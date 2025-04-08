@@ -171,7 +171,7 @@ async def webhook_orders_updated(
 
             corrected_city, note = get_corrected_city(original_city, shipping_address1)
 
-            total_price = order.get("total_price", "")
+            total_price = sum(float(item["price"]) * item["quantity"] for item in order.get("line_items", []))
             notes = order.get("note", "")
             tags = order.get("tags", "")
             line_items = ", ".join([
