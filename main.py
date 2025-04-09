@@ -198,13 +198,14 @@ async def webhook_orders_updated(
                 shipping_name,
                 shipping_phone,
                 shipping_address1,
-                corrected_city,
                 total_price,
+                corrected_city,
                 line_items,
                 notes,
                 tags,
                 note
             ]
+
 
             row = (row + [""] * 11)[:11]
 
