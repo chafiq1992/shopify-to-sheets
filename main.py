@@ -116,96 +116,79 @@ async def webhook_orders_updated(
 
     spreadsheet_id = SHOP_DOMAIN_TO_SHEET[x_shopify_shop_domain]
     body = await request.body()
+    order = json.loads(body)
 
     # Uncomment in production
     # if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
     #     raise HTTPException(status_code=401, detail="Invalid HMAC")
 
-    order = json.loads(body)
-    tag_list = [t.strip().lower() for t in order.get("tags", "").split(",")]
     order_id = order.get("name", "")
+    tags_str = order.get("tags", "")
+    current_tags = [t.strip().lower() for t in tags_str.split(",")]
 
-    if TRIGGER_TAG in tag_list:
+    # Check if 'pc' tag is present
+    if TRIGGER_TAG not in current_tags:
+        logging.info(f"🚫 Skipping order {order_id} — tag '{TRIGGER_TAG}' not present")
+        return JSONResponse(content={"skipped": True})
 
-        try:
-            created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
-            shipping_address = order.get("shipping_address", {})
-            shipping_name = shipping_address.get("name", "")
-            shipping_phone = format_phone(shipping_address.get("phone", ""))
-            shipping_address1 = shipping_address.get("address1", "")
-            original_city = shipping_address.get("city", "")
-            corrected_city, note = get_corrected_city(original_city, shipping_address1)
-            total_price = order.get("total_outstanding") or order.get("presentment_total_price_set", {}).get("shop_money", {}).get("amount", "")
-            notes = order.get("note", "")
-            tags = order.get("tags", "")
-            line_items = ", ".join([
-                f"{item['quantity']}x {item.get('variant_title', item['title'])}"
-                for item in order.get("line_items", [])
-            ])
+    # ✅ Check if already exported
+    existing_orders = sheets_service.spreadsheets().values().get(
+        spreadsheetId=spreadsheet_id,
+        range="Sheet1!A:K"
+    ).execute().get("values", [])
+    order_ids = [r[1] for r in existing_orders[1:] if len(r) > 1]
 
-            row = [
-                created_at,
-                order_id,
-                shipping_name,
-                shipping_phone,
-                shipping_address1,
-                total_price,
-                corrected_city,
-                line_items,
-                notes,
-                tags,
-                note
-            ]
-            row = (row + [""] * 12)[:12]
+    if order_id in order_ids:
+        logging.info(f"⚠️ Order {order_id} already exported — skipping")
+        return JSONResponse(content={"skipped": True})
 
-            existing_orders = sheets_service.spreadsheets().values().get(
-                spreadsheetId=spreadsheet_id,
-                range="Sheet1!A:K"
-            ).execute().get("values", [])
+    # ✅ Export only if order is open & unfulfilled
+    if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
+        logging.info(f"🚫 Order {order_id} is not open/unfulfilled — skipping")
+        return JSONResponse(content={"skipped": True})
 
-            order_ids = [r[1] for r in existing_orders[1:] if len(r) > 1]
+    try:
+        created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
+        shipping_address = order.get("shipping_address", {})
+        shipping_name = shipping_address.get("name", "")
+        shipping_phone = format_phone(shipping_address.get("phone", ""))
+        shipping_address1 = shipping_address.get("address1", "")
+        original_city = shipping_address.get("city", "")
+        corrected_city, note = get_corrected_city(original_city, shipping_address1)
+        total_price = order.get("total_outstanding") or order.get("presentment_total_price_set", {}).get("shop_money", {}).get("amount", "")
+        notes = order.get("note", "")
+        tags = order.get("tags", "")
+        line_items = ", ".join([
+            f"{item['quantity']}x {item.get('variant_title', item['title'])}"
+            for item in order.get("line_items", [])
+        ])
 
-            if order_id in order_ids:
-                logging.info(f"⚠️ Order {order_id} already exists — skipping.")
-            else:
-                sheets_service.spreadsheets().values().append(
-                    spreadsheetId=spreadsheet_id,
-                    range="Sheet1!A1",
-                    valueInputOption="USER_ENTERED",
-                    insertDataOption="INSERT_ROWS",
-                    body={"values": [row]}
-                ).execute()
-                logging.info(f"✅ Added order {order_id}")
+        row = [
+            created_at,
+            order_id,
+            shipping_name,
+            shipping_phone,
+            shipping_address1,
+            total_price,
+            corrected_city,
+            line_items,
+            notes,
+            tags,
+            note
+        ]
+        row = (row + [""] * 12)[:12]
 
-        except Exception as e:
-            logging.error(f"❌ Error adding order {order_id}: {e}")
+        sheets_service.spreadsheets().values().append(
+            spreadsheetId=spreadsheet_id,
+            range="Sheet1!A1",
+            valueInputOption="USER_ENTERED",
+            insertDataOption="INSERT_ROWS",
+            body={"values": [row]}
+        ).execute()
+        logging.info(f"✅ Exported order {order_id}")
 
-    else:
-        try:
-            result = sheets_service.spreadsheets().values().get(
-                spreadsheetId=spreadsheet_id,
-                range="Sheet1!A:K"
-            ).execute()
-
-            rows = result.get("values", [])
-            if not rows:
-                return JSONResponse(content={"skipped": True})
-
-            for idx, row in enumerate(rows[1:], start=2):
-                if len(row) > 1 and row[1] == order_id:
-                    status = "CANCELLED" if order.get("cancelled_at") else "FULFILLED"
-                    update_range = f"Sheet1!L{idx}"
-                    sheets_service.spreadsheets().values().update(
-                        spreadsheetId=spreadsheet_id,
-                        range=update_range,
-                        valueInputOption="USER_ENTERED",
-                        body={"values": [[status]]}
-                    ).execute()
-                    logging.info(f"✏️ Marked order {order_id} as {status} (row {idx})")
-                    break
-
-        except Exception as e:
-            logging.error(f"❌ Error updating order status {order_id}: {e}")
+    except Exception as e:
+        logging.error(f"❌ Error exporting order {order_id}: {e}")
 
     return JSONResponse(content={"success": True})
 
