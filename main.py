@@ -5,6 +5,7 @@ import hmac
 import base64
 import tempfile
 import difflib
+import logging
 from datetime import datetime
 from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import JSONResponse
@@ -23,13 +24,19 @@ SHOP_DOMAIN_TO_SHEET = {
 CITY_ALIAS_PATH = "city_aliases.json"
 CITY_LIST_PATH = "cities_bigdelivery.txt"
 
+# === LOGGER ===
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s",
+)
+
 # === LOAD CITY ALIASES AND LIST ===
 def load_alias_map(filepath):
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
-        print(f"⚠️ Failed to load alias map: {e}")
+        logging.warning(f"⚠️ Failed to load alias map: {e}")
         return {}
 
 def load_cities(filepath):
@@ -37,13 +44,13 @@ def load_cities(filepath):
         with open(filepath, "r", encoding="utf-8") as f:
             return [line.strip().lower() for line in f if line.strip()]
     except Exception as e:
-        print(f"⚠️ Failed to load cities list: {e}")
+        logging.warning(f"⚠️ Failed to load cities list: {e}")
         return []
 
 CITY_ALIASES = load_alias_map(CITY_ALIAS_PATH)
 VALID_CITIES = load_cities(CITY_LIST_PATH)
 
-# === GOOGLE SHEETS AUTH FROM BASE64 ENV ===
+# === GOOGLE SHEETS AUTH ===
 encoded_credentials = os.getenv("GOOGLE_CREDENTIALS_BASE64")
 if not encoded_credentials:
     raise RuntimeError("Missing GOOGLE_CREDENTIALS_BASE64 env variable")
@@ -81,8 +88,7 @@ def format_phone(phone: str) -> str:
         return "0" + cleaned[3:]
     elif cleaned.startswith("0"):
         return cleaned
-    else:
-        return cleaned
+    return cleaned
 
 def get_corrected_city(input_city, address_hint=""):
     city_clean = input_city.strip().lower()
@@ -121,7 +127,7 @@ async def webhook_orders_updated(
 
     if TRIGGER_TAG in tag_list:
         if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
-            print("⛔ Skipped adding row: Order is fulfilled, canceled or closed")
+            logging.info(f"⛔ Skipped: Order {order_id} is fulfilled/cancelled/closed")
             return JSONResponse(content={"skipped": True})
 
         try:
@@ -153,7 +159,6 @@ async def webhook_orders_updated(
                 tags,
                 note
             ]
-
             row = (row + [""] * 12)[:12]
 
             existing_orders = sheets_service.spreadsheets().values().get(
@@ -164,7 +169,7 @@ async def webhook_orders_updated(
             order_ids = [r[1] for r in existing_orders[1:] if len(r) > 1]
 
             if order_id in order_ids:
-                print(f"⚠️ Order ID {order_id} already exists — skipping.")
+                logging.info(f"⚠️ Order {order_id} already exists — skipping.")
             else:
                 sheets_service.spreadsheets().values().append(
                     spreadsheetId=spreadsheet_id,
@@ -173,13 +178,12 @@ async def webhook_orders_updated(
                     insertDataOption="INSERT_ROWS",
                     body={"values": [row]}
                 ).execute()
-                print("✅ Row added:", row)
+                logging.info(f"✅ Added order {order_id}")
 
         except Exception as e:
-            print("❌ Error processing order:", e)
+            logging.error(f"❌ Error adding order {order_id}: {e}")
 
     else:
-        # If order was already printed, mark it as CANCELLED or FULFILLED instead of deleting
         try:
             result = sheets_service.spreadsheets().values().get(
                 spreadsheetId=spreadsheet_id,
@@ -190,7 +194,7 @@ async def webhook_orders_updated(
             if not rows:
                 return JSONResponse(content={"skipped": True})
 
-            for idx, row in enumerate(rows[1:], start=2):  # 1-based row index
+            for idx, row in enumerate(rows[1:], start=2):
                 if len(row) > 1 and row[1] == order_id:
                     status = "CANCELLED" if order.get("cancelled_at") else "FULFILLED"
                     update_range = f"Sheet1!L{idx}"
@@ -200,11 +204,11 @@ async def webhook_orders_updated(
                         valueInputOption="USER_ENTERED",
                         body={"values": [[status]]}
                     ).execute()
-                    print(f"✏️ Marked order {order_id} as {status} in row {idx}")
+                    logging.info(f"✏️ Marked order {order_id} as {status} (row {idx})")
                     break
 
         except Exception as e:
-            print(f"❌ Error marking status for order {order_id}:", e)
+            logging.error(f"❌ Error updating order status {order_id}: {e}")
 
     return JSONResponse(content={"success": True})
 
