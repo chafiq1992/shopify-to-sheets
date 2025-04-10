@@ -126,9 +126,6 @@ async def webhook_orders_updated(
     order_id = order.get("name", "")
 
     if TRIGGER_TAG in tag_list:
-        if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
-            logging.info(f"⛔ Skipped: Order {order_id} is fulfilled/cancelled/closed")
-            return JSONResponse(content={"skipped": True})
 
         try:
             created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
