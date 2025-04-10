@@ -111,31 +111,27 @@ async def webhook_orders_updated(
     spreadsheet_id = SHOP_DOMAIN_TO_SHEET[x_shopify_shop_domain]
     body = await request.body()
 
-    # Uncomment this in production for webhook security
+    # Uncomment in production
     # if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
     #     raise HTTPException(status_code=401, detail="Invalid HMAC")
 
     order = json.loads(body)
-
     tag_list = [t.strip().lower() for t in order.get("tags", "").split(",")]
     order_id = order.get("name", "")
 
     if TRIGGER_TAG in tag_list:
-        # ✅ Only add new row if unfulfilled and not canceled/closed
         if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
             print("⛔ Skipped adding row: Order is fulfilled, canceled or closed")
             return JSONResponse(content={"skipped": True})
+
         try:
             created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
             shipping_address = order.get("shipping_address", {})
-
             shipping_name = shipping_address.get("name", "")
             shipping_phone = format_phone(shipping_address.get("phone", ""))
             shipping_address1 = shipping_address.get("address1", "")
             original_city = shipping_address.get("city", "")
-
             corrected_city, note = get_corrected_city(original_city, shipping_address1)
-
             total_price = order.get("total_outstanding") or order.get("presentment_total_price_set", {}).get("shop_money", {}).get("amount", "")
             notes = order.get("note", "")
             tags = order.get("tags", "")
@@ -181,8 +177,9 @@ async def webhook_orders_updated(
 
         except Exception as e:
             print("❌ Error processing order:", e)
+
     else:
-        # ✅ If order is fulfilled/cancelled later, just mark it
+        # If order was already printed, mark it as CANCELLED or FULFILLED instead of deleting
         try:
             result = sheets_service.spreadsheets().values().get(
                 spreadsheetId=spreadsheet_id,
@@ -193,10 +190,10 @@ async def webhook_orders_updated(
             if not rows:
                 return JSONResponse(content={"skipped": True})
 
-            for idx, row in enumerate(rows[1:], start=2):  # Sheet index starts at 2 (excluding headers)
+            for idx, row in enumerate(rows[1:], start=2):  # 1-based row index
                 if len(row) > 1 and row[1] == order_id:
                     status = "CANCELLED" if order.get("cancelled_at") else "FULFILLED"
-                    update_range = f"Sheet1!L{idx}"  # Column L = status column
+                    update_range = f"Sheet1!L{idx}"
                     sheets_service.spreadsheets().values().update(
                         spreadsheetId=spreadsheet_id,
                         range=update_range,
