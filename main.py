@@ -74,11 +74,7 @@ def verify_shopify_webhook(data, hmac_header):
 def format_phone(phone: str) -> str:
     if not phone:
         return ""
-
-    # Remove spaces, dashes, parentheses
     cleaned = phone.replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-
-    # Normalize to 0xxxxxxxxx
     if cleaned.startswith("+212"):
         return "0" + cleaned[4:]
     elif cleaned.startswith("212"):
@@ -86,64 +82,21 @@ def format_phone(phone: str) -> str:
     elif cleaned.startswith("0"):
         return cleaned
     else:
-        return cleaned  # fallback
+        return cleaned
 
 def get_corrected_city(input_city, address_hint=""):
     city_clean = input_city.strip().lower()
-
     if city_clean in CITY_ALIASES:
         corrected = CITY_ALIASES[city_clean]
         return corrected, f"✅ Matched alias: '{input_city}' → '{corrected}'"
-
     matches = difflib.get_close_matches(city_clean, VALID_CITIES, n=1, cutoff=0.85)
     if matches:
         corrected = matches[0].title()
         return corrected, f"✅ Fuzzy matched: '{input_city}' → '{corrected}'"
-
     for city in VALID_CITIES:
         if city in address_hint.lower():
             return city.title(), f"✅ Guessed from address: '{input_city}' → '{city.title()}'"
-
     return input_city, f"🛑 Could not match: '{input_city}'"
-
-def delete_row_by_order_id(spreadsheet_id, order_id):
-    result = sheets_service.spreadsheets().values().get(
-        spreadsheetId=spreadsheet_id,
-        range="Sheet1!A:K"
-    ).execute()
-
-    rows = result.get("values", [])
-    if not rows:
-        print("⚠️ Sheet is empty.")
-        return
-
-    data_rows = rows[1:]
-    new_data_rows = []
-    found = False
-
-    for row in data_rows:
-        if len(row) > 1 and row[1] == order_id:
-            found = True
-            continue
-        new_data_rows.append(row)
-
-    if found:
-        sheets_service.spreadsheets().values().clear(
-            spreadsheetId=spreadsheet_id,
-            range="Sheet1!A2:K"
-        ).execute()
-
-        if new_data_rows:
-            sheets_service.spreadsheets().values().update(
-                spreadsheetId=spreadsheet_id,
-                range="Sheet1!A2",
-                valueInputOption="USER_ENTERED",
-                body={"values": new_data_rows}
-            ).execute()
-
-        print(f"🗑️ Deleted row for order ID: {order_id}")
-    else:
-        print(f"⚠️ No row found for order ID: {order_id}")
 
 # === WEBHOOK ENDPOINT ===
 @app.post("/webhook/orders-updated")
@@ -158,21 +111,20 @@ async def webhook_orders_updated(
     spreadsheet_id = SHOP_DOMAIN_TO_SHEET[x_shopify_shop_domain]
     body = await request.body()
 
-    # Uncomment to activate HMAC verification in production
+    # Uncomment this in production for webhook security
     # if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
     #     raise HTTPException(status_code=401, detail="Invalid HMAC")
 
     order = json.loads(body)
 
-    # ✅ Skip fulfilled or paid orders
-    if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
-        print("⛔ Skipped: Order is fulfilled, canceled or closed")
-        return JSONResponse(content={"skipped": True})
-
     tag_list = [t.strip().lower() for t in order.get("tags", "").split(",")]
     order_id = order.get("name", "")
 
     if TRIGGER_TAG in tag_list:
+        # ✅ Only add new row if unfulfilled and not canceled/closed
+        if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
+            print("⛔ Skipped adding row: Order is fulfilled, canceled or closed")
+            return JSONResponse(content={"skipped": True})
         try:
             created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
             shipping_address = order.get("shipping_address", {})
@@ -206,8 +158,7 @@ async def webhook_orders_updated(
                 note
             ]
 
-
-            row = (row + [""] * 11)[:11]
+            row = (row + [""] * 12)[:12]
 
             existing_orders = sheets_service.spreadsheets().values().get(
                 spreadsheetId=spreadsheet_id,
@@ -230,9 +181,33 @@ async def webhook_orders_updated(
 
         except Exception as e:
             print("❌ Error processing order:", e)
-
     else:
-        delete_row_by_order_id(spreadsheet_id, order_id)
+        # ✅ If order is fulfilled/cancelled later, just mark it
+        try:
+            result = sheets_service.spreadsheets().values().get(
+                spreadsheetId=spreadsheet_id,
+                range="Sheet1!A:K"
+            ).execute()
+
+            rows = result.get("values", [])
+            if not rows:
+                return JSONResponse(content={"skipped": True})
+
+            for idx, row in enumerate(rows[1:], start=2):  # Sheet index starts at 2 (excluding headers)
+                if len(row) > 1 and row[1] == order_id:
+                    status = "CANCELLED" if order.get("cancelled_at") else "FULFILLED"
+                    update_range = f"Sheet1!L{idx}"  # Column L = status column
+                    sheets_service.spreadsheets().values().update(
+                        spreadsheetId=spreadsheet_id,
+                        range=update_range,
+                        valueInputOption="USER_ENTERED",
+                        body={"values": [[status]]}
+                    ).execute()
+                    print(f"✏️ Marked order {order_id} as {status} in row {idx}")
+                    break
+
+        except Exception as e:
+            print(f"❌ Error marking status for order {order_id}:", e)
 
     return JSONResponse(content={"success": True})
 
