@@ -126,12 +126,40 @@ async def webhook_orders_updated(
     tags_str = order.get("tags", "")
     current_tags = [t.strip().lower() for t in tags_str.split(",")]
 
-    # Check if 'pc' tag is present
+    # === MARK EXISTING ROWS BASED ON STATUS OR TAG "ch" ===
+    try:
+        result = sheets_service.spreadsheets().values().get(
+            spreadsheetId=spreadsheet_id,
+            range="Sheet1!A:K"
+        ).execute()
+        rows = result.get("values", [])
+        for idx, row in enumerate(rows[1:], start=2):  # Start from row 2
+            if len(row) > 1 and row[1] == order_id:
+                status = ""
+                if order.get("cancelled_at"):
+                    status = "CANCELLED"
+                elif order.get("fulfillment_status") == "fulfilled":
+                    status = "FULFILLED"
+                elif "ch" in current_tags:
+                    status = "CH"
+                if status:
+                    update_range = f"Sheet1!L{idx}"
+                    sheets_service.spreadsheets().values().update(
+                        spreadsheetId=spreadsheet_id,
+                        range=update_range,
+                        valueInputOption="USER_ENTERED",
+                        body={"values": [[status]]}
+                    ).execute()
+                    logging.info(f"🎨 Updated row {order_id} → {status}")
+                break
+    except Exception as e:
+        logging.error(f"❌ Failed to mark status for {order_id}: {e}")
+
+    # === EXPORT ONLY IF PC TAG IS NEW + ORDER IS OPEN/UNFULFILLED ===
     if TRIGGER_TAG not in current_tags:
-        logging.info(f"🚫 Skipping order {order_id} — tag '{TRIGGER_TAG}' not present")
+        logging.info(f"🚫 Skipping {order_id} — no 'pc' tag")
         return JSONResponse(content={"skipped": True})
 
-    # ✅ Check if already exported
     existing_orders = sheets_service.spreadsheets().values().get(
         spreadsheetId=spreadsheet_id,
         range="Sheet1!A:K"
@@ -139,14 +167,14 @@ async def webhook_orders_updated(
     order_ids = [r[1] for r in existing_orders[1:] if len(r) > 1]
 
     if order_id in order_ids:
-        logging.info(f"⚠️ Order {order_id} already exported — skipping")
+        logging.info(f"⚠️ Already exported {order_id} — skipping")
         return JSONResponse(content={"skipped": True})
 
-    # ✅ Export only if order is open & unfulfilled
     if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
-        logging.info(f"🚫 Order {order_id} is not open/unfulfilled — skipping")
+        logging.info(f"🚫 Order {order_id} is fulfilled/cancelled/closed — skipping")
         return JSONResponse(content={"skipped": True})
 
+    # === EXPORT NEW ORDER ===
     try:
         created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
         shipping_address = order.get("shipping_address", {})
@@ -186,7 +214,6 @@ async def webhook_orders_updated(
             body={"values": [row]}
         ).execute()
         logging.info(f"✅ Exported order {order_id}")
-
     except Exception as e:
         logging.error(f"❌ Error exporting order {order_id}: {e}")
 
