@@ -6,6 +6,7 @@ import base64
 import tempfile
 import difflib
 import logging
+import requests
 from datetime import datetime
 from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import JSONResponse
@@ -20,6 +21,23 @@ SHOP_DOMAIN_TO_SHEET = {
     "fdd92b-2e.myshopify.com": os.getenv("SHEET_IRRANOVA_ID"),
     "nouralibas.myshopify.com": os.getenv("SHEET_IRRAKIDS_ID")
 }
+
+STORES = [
+    {
+        "name": "irranova",
+        "spreadsheet_id": os.getenv("SHEET_IRRANOVA_ID"),
+        "shop_domain": "fdd92b-2e.myshopify.com",
+        "api_key": os.getenv("SHOPIFY_API_KEY_IRRANOVA"),
+        "password": os.getenv("SHOPIFY_PASSWORD_IRRANOVA")
+    },
+    {
+        "name": "irrakids",
+        "spreadsheet_id": os.getenv("SHEET_IRRAKIDS_ID"),
+        "shop_domain": "nouralibas.myshopify.com",
+        "api_key": os.getenv("SHOPIFY_API_KEY_IRRAKIDS"),
+        "password": os.getenv("SHOPIFY_PASSWORD_IRRAKIDS")
+    }
+]
 
 CITY_ALIAS_PATH = "city_aliases.json"
 CITY_LIST_PATH = "cities_bigdelivery.txt"
@@ -104,6 +122,70 @@ def get_corrected_city(input_city, address_hint=""):
             return city.title(), f"✅ Guessed from address: '{input_city}' → '{city.title()}'"
     return input_city, f"🛑 Could not match: '{input_city}'"
 
+def is_fulfilled(order_id, shop_domain, api_key, password):
+    try:
+        url = f"https://{api_key}:{password}@{shop_domain}/admin/api/2023-04/orders.json?name={order_id}"
+        response = requests.get(url)
+        orders = response.json().get("orders", [])
+        return orders and orders[0].get("fulfillment_status") == "fulfilled"
+    except Exception as e:
+        logging.error(f"⚠️ Failed to fetch order {order_id} from {shop_domain}: {e}")
+        return False
+
+def apply_green_background(sheet_id, row_index):
+    body = {
+        "requests": [
+            {
+                "repeatCell": {
+                    "range": {
+                        "sheetId": 0,
+                        "startRowIndex": row_index - 1,
+                        "endRowIndex": row_index,
+                        "startColumnIndex": 0,
+                        "endColumnIndex": 12
+                    },
+                    "cell": {
+                        "userEnteredFormat": {
+                            "backgroundColor": {
+                                "red": 0.8,
+                                "green": 1.0,
+                                "blue": 0.8
+                            }
+                        }
+                    },
+                    "fields": "userEnteredFormat.backgroundColor"
+                }
+            }
+        ]
+    }
+    sheets_service.spreadsheets().batchUpdate(
+        spreadsheetId=sheet_id,
+        body=body
+    ).execute()
+
+def sync_unfulfilled_rows(store):
+    result = sheets_service.spreadsheets().values().get(
+        spreadsheetId=store["spreadsheet_id"],
+        range="Sheet1!A:L"
+    ).execute()
+
+    rows = result.get("values", [])
+    for idx, row in enumerate(rows[1:], start=2):  # Skip header
+        order_id = row[1] if len(row) > 1 else ""
+        col_l = row[11].strip().upper() if len(row) > 11 else ""
+
+        if order_id and col_l != "FULFILLED":
+            if is_fulfilled(order_id, store["shop_domain"], store["api_key"], store["password"]):
+                update_range = f"Sheet1!L{idx}"
+                sheets_service.spreadsheets().values().update(
+                    spreadsheetId=store["spreadsheet_id"],
+                    range=update_range,
+                    valueInputOption="USER_ENTERED",
+                    body={"values": [["FULFILLED"]]}
+                ).execute()
+                apply_green_background(store["spreadsheet_id"], idx)
+                logging.info(f"✅ Synced old order {order_id} → FULFILLED")
+
 # === WEBHOOK ENDPOINT ===
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(
@@ -150,6 +232,8 @@ async def webhook_orders_updated(
                         valueInputOption="USER_ENTERED",
                         body={"values": [[status]]}
                     ).execute()
+                    if status == "FULFILLED":
+                        apply_green_background(spreadsheet_id, idx)
                     logging.info(f"🎨 Updated row {order_id} → {status}")
                 break
     except Exception as e:
@@ -216,6 +300,11 @@ async def webhook_orders_updated(
         logging.info(f"✅ Exported order {order_id}")
     except Exception as e:
         logging.error(f"❌ Error exporting order {order_id}: {e}")
+
+    # === SYNC OTHER UNMARKED FULFILLED ORDERS ===
+    for store in STORES:
+        if store["shop_domain"] == x_shopify_shop_domain:
+            sync_unfulfilled_rows(store)
 
     return JSONResponse(content={"success": True})
 
