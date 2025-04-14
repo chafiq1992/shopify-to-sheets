@@ -305,6 +305,7 @@ async def webhook_orders_updated(
     for store in STORES:
         if store["shop_domain"] == x_shopify_shop_domain:
             sync_unfulfilled_rows(store)
+            logging.info(f"🔄 Finished syncing old orders for {store['name']}")
 
     return JSONResponse(content={"success": True})
 
