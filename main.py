@@ -46,6 +46,7 @@ CITY_LIST_PATH = "cities_bigdelivery.txt"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(message)s",
+    force=True  # ensures log output shows on Render
 )
 
 # === LOAD CITY ALIASES AND LIST ===
@@ -164,6 +165,7 @@ def apply_green_background(sheet_id, row_index):
     ).execute()
 
 def sync_unfulfilled_rows(store):
+    logging.info(f"🔍 Syncing unfulfilled rows for store: {store['name']}")
     result = sheets_service.spreadsheets().values().get(
         spreadsheetId=store["spreadsheet_id"],
         range="Sheet1!A:L"
@@ -173,6 +175,8 @@ def sync_unfulfilled_rows(store):
     for idx, row in enumerate(rows[1:], start=2):  # Skip header
         order_id = row[1] if len(row) > 1 else ""
         col_l = row[11].strip().upper() if len(row) > 11 else ""
+
+        logging.info(f"🕵️ Checking row {idx} → order_id: {order_id} | status: {col_l}")
 
         if order_id and col_l != "FULFILLED":
             if is_fulfilled(order_id, store["shop_domain"], store["api_key"], store["password"]):
@@ -200,11 +204,9 @@ async def webhook_orders_updated(
     body = await request.body()
     order = json.loads(body)
 
-    # Uncomment in production
-    # if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
-    #     raise HTTPException(status_code=401, detail="Invalid HMAC")
-
     order_id = order.get("name", "")
+    logging.info(f"🔔 Webhook received for order: {order_id}")
+
     tags_str = order.get("tags", "")
     current_tags = [t.strip().lower() for t in tags_str.split(",")]
 
