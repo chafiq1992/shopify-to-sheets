@@ -12,7 +12,6 @@ from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import JSONResponse
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-import time
 
 # === CONFIG ===
 TRIGGER_TAG = "pc"
@@ -134,100 +133,62 @@ def is_fulfilled(order_id, shop_domain, api_key, password):
         logging.error(f"⚠️ Failed to fetch order {order_id} from {shop_domain}: {e}")
         return False
 
-import time
+def apply_green_background(sheet_id, row_index):
+    body = {
+        "requests": [
+            {
+                "repeatCell": {
+                    "range": {
+                        "sheetId": 0,
+                        "startRowIndex": row_index - 1,
+                        "endRowIndex": row_index,
+                        "startColumnIndex": 0,
+                        "endColumnIndex": 12
+                    },
+                    "cell": {
+                        "userEnteredFormat": {
+                            "backgroundColor": {
+                                "red": 0.8,
+                                "green": 1.0,
+                                "blue": 0.8
+                            }
+                        }
+                    },
+                    "fields": "userEnteredFormat.backgroundColor"
+                }
+            }
+        ]
+    }
+    sheets_service.spreadsheets().batchUpdate(
+        spreadsheetId=sheet_id,
+        body=body
+    ).execute()
 
 def sync_unfulfilled_rows(store):
     logging.info(f"🔍 Syncing unfulfilled rows for store: {store['name']}")
-    spreadsheet_id = store["spreadsheet_id"]
-
     result = sheets_service.spreadsheets().values().get(
-        spreadsheetId=spreadsheet_id,
+        spreadsheetId=store["spreadsheet_id"],
         range="Sheet1!A:L"
     ).execute()
 
     rows = result.get("values", [])
-    if len(rows) <= 1:
-        return
-
-    cache = {}
-    last_api_call = 0
-
-    for idx, row in list(enumerate(rows[1:], start=2)):
+    for idx, row in enumerate(rows[1:], start=2):  # Skip header
         order_id = row[1] if len(row) > 1 else ""
-        current_status = row[11].strip().upper() if len(row) > 11 else ""
+        col_l = row[11].strip().upper() if len(row) > 11 else ""
 
-        if not order_id or current_status in ["FULFILLED", "CANCELLED"]:
-            continue
+        logging.info(f"🕵️ Checking row {idx} → order_id: {order_id} | status: {col_l}")
 
-        if order_id in cache:
-            shopify_order = cache[order_id]
-        else:
-            # Rate limit: 1 request per second
-            elapsed = time.time() - last_api_call
-            if elapsed < 1:
-                time.sleep(1 - elapsed)
-
-            try:
-                url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders.json?name={order_id}"
-                response = requests.get(url)
-                orders = response.json().get("orders", [])
-                if not orders:
-                    logging.warning(f"⚠️ Order {order_id} not found on Shopify")
-                    continue
-                shopify_order = orders[0]
-                cache[order_id] = shopify_order
-                last_api_call = time.time()
-            except Exception as e:
-                logging.error(f"❌ Error fetching {order_id}: {e}")
-                continue
-
-        shopify_status = ""
-        if shopify_order.get("cancelled_at"):
-            shopify_status = "CANCELLED"
-        elif shopify_order.get("fulfillment_status") == "fulfilled":
-            shopify_status = "FULFILLED"
-
-        if shopify_status:
-            update_range = f"Sheet1!L{idx}"
-            sheets_service.spreadsheets().values().update(
-                spreadsheetId=spreadsheet_id,
-                range=update_range,
-                valueInputOption="USER_ENTERED",
-                body={"values": [[shopify_status]]}
-            ).execute()
-            logging.info(f"✅ Updated order {order_id} → {shopify_status}")
-        else:
-            # Move to bottom if still unfulfilled
-            logging.info(f"📦 Order {order_id} is unfulfilled — moving to bottom")
-
-            # 1. Delete current row
-            sheets_service.spreadsheets().batchUpdate(
-                spreadsheetId=spreadsheet_id,
-                body={
-                    "requests": [{
-                        "deleteDimension": {
-                            "range": {
-                                "sheetId": 0,
-                                "dimension": "ROWS",
-                                "startIndex": idx - 1,
-                                "endIndex": idx
-                            }
-                        }
-                    }]
-                }
-            ).execute()
-
-            # 2. Append it at the bottom
-            while len(row) < 12:
-                row.append("")
-            sheets_service.spreadsheets().values().append(
-                spreadsheetId=spreadsheet_id,
-                range="Sheet1!A1",
-                valueInputOption="USER_ENTERED",
-                insertDataOption="INSERT_ROWS",
-                body={"values": [row]}
-            ).execute()
-            logging.info(f"🔄 Moved order {order_id} to bottom")
+        if order_id and col_l != "FULFILLED":
+            if is_fulfilled(order_id, store["shop_domain"], store["api_key"], store["password"]):
+                update_range = f"Sheet1!L{idx}"
+                sheets_service.spreadsheets().values().update(
+                    spreadsheetId=store["spreadsheet_id"],
+                    range=update_range,
+                    valueInputOption="USER_ENTERED",
+                    body={"values": [["FULFILLED"]]}
+                ).execute()
+                apply_green_background(store["spreadsheet_id"], idx)
+                logging.info(f"✅ Synced old order {order_id} → FULFILLED")
 
 # === WEBHOOK ENDPOINT ===
 @app.post("/webhook/orders-updated")
@@ -263,6 +224,8 @@ async def webhook_orders_updated(
                     status = "CANCELLED"
                 elif order.get("fulfillment_status") == "fulfilled":
                     status = "FULFILLED"
+                elif "ch" in current_tags:
+                    status = "CH"
                 if status:
                     update_range = f"Sheet1!L{idx}"
                     sheets_service.spreadsheets().values().update(
