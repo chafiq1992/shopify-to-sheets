@@ -300,13 +300,10 @@ async def webhook_orders_updated(
 
     # === EXPORT ONLY IF: Has 'pc' tag + not fulfilled/cancelled + not already in sheet ===
     if TRIGGER_TAG not in current_tags:
-        logging.info(f"🚫 Skipping {order_id} — no 'pc' tag")
+        logging.info(f"🚫 Skipping {order_id} — no '{TRIGGER_TAG}' tag")
         return JSONResponse(content={"skipped": True})
 
-    if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
-        logging.info(f"🚫 Order {order_id} is fulfilled/cancelled/closed — skipping")
-        return JSONResponse(content={"skipped": True})
-
+    # Check current sheet to avoid duplicate export
     try:
         result = sheets_service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id,
@@ -321,9 +318,16 @@ async def webhook_orders_updated(
         logging.error(f"❌ Failed to load existing orders: {e}")
         return JSONResponse(content={"error": "sheet read failed"})
 
-    if order_id in existing_order_ids:
-        logging.info(f"⚠️ Order {order_id} already exists — skipping export")
+    # If order already exists in the sheet, skip it
+    if order_id.strip() in existing_order_ids:
+        logging.info(f"⚠️ Order {order_id} already exists in sheet — skipping")
         return JSONResponse(content={"skipped": True})
+
+    # Skip if fulfilled, cancelled, or closed
+    if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
+        logging.info(f"🚫 Order {order_id} is fulfilled/cancelled/closed — skipping")
+        return JSONResponse(content={"skipped": True})
+
 
     # === EXPORT NEW ORDER ===
     try:
