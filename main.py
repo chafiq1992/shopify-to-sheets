@@ -302,7 +302,7 @@ async def webhook_orders_updated(
     # === EXPORT ONLY IF PC TAG IS NEW + ORDER IS OPEN/UNFULFILLED ===
         if TRIGGER_TAG not in current_tags:
              logging.info(f"🚫 Skipping {order_id} — no 'pc' tag")
-             return JSONResponse(content={"skipped": True}
+             return JSONResponse(content={"skipped": True})
                                  
         try:
         result = sheets_service.spreadsheets().values().get(
