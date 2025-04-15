@@ -134,37 +134,6 @@ def is_fulfilled(order_id, shop_domain, api_key, password):
         logging.error(f"⚠️ Failed to fetch order {order_id} from {shop_domain}: {e}")
         return False
 
-def apply_green_background(sheet_id, row_index):
-    body = {
-        "requests": [
-            {
-                "repeatCell": {
-                    "range": {
-                        "sheetId": 0,
-                        "startRowIndex": row_index - 1,
-                        "endRowIndex": row_index,
-                        "startColumnIndex": 0,
-                        "endColumnIndex": 12
-                    },
-                    "cell": {
-                        "userEnteredFormat": {
-                            "backgroundColor": {
-                                "red": 0.8,
-                                "green": 1.0,
-                                "blue": 0.8
-                            }
-                        }
-                    },
-                    "fields": "userEnteredFormat.backgroundColor"
-                }
-            }
-        ]
-    }
-    sheets_service.spreadsheets().batchUpdate(
-        spreadsheetId=sheet_id,
-        body=body
-    ).execute()
-
 def sync_unfulfilled_rows(store):
     logging.info(f"🔍 Syncing unfulfilled rows for store: {store['name']}")
     spreadsheet_id = store["spreadsheet_id"]
@@ -261,8 +230,8 @@ async def webhook_orders_updated(
     body = await request.body()
     order = json.loads(body)
 
-    order_id = order.get("name", "").strip()
-    logging.info(f"🔔 Webhook received for order: {order_id}")
+    order_number = order.get("name", "").strip()
+    logging.info(f"🔔 Webhook received for order: {order_number}")
 
     tags_str = order.get("tags", "")
     current_tags = [t.strip().lower() for t in tags_str.split(",")]
@@ -274,15 +243,15 @@ async def webhook_orders_updated(
             range="Sheet1!A:K"
         ).execute()
         rows = result.get("values", [])
+        order_number = str(order.get("order_number", "")).strip()
+        
         for idx, row in enumerate(rows[1:], start=2):  # Start from row 2
-            if len(row) > 1 and row[1] == order_id:
+            if len(row) > 1 and row[1].strip() == order_number:
                 status = ""
                 if order.get("cancelled_at"):
                     status = "CANCELLED"
                 elif order.get("fulfillment_status") == "fulfilled":
                     status = "FULFILLED"
-                elif "ch" in current_tags:
-                    status = "CH"
                 if status:
                     update_range = f"Sheet1!L{idx}"
                     sheets_service.spreadsheets().values().update(
