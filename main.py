@@ -177,19 +177,11 @@ def sync_unfulfilled_rows(store):
     if len(rows) <= 1:
         return
 
-    header = rows[0]
-    body_rows = rows[1:]
-    new_body = []
-    to_move = []
-
-    for idx, row in enumerate(body_rows, start=2):
+    for idx, row in enumerate(rows[1:], start=2):
         order_id = row[1] if len(row) > 1 else ""
-        col_l = row[11].strip().upper() if len(row) > 11 else ""
+        current_status = row[11].strip().upper() if len(row) > 11 else ""
 
-        logging.info(f"🕵️ Checking row {idx} → order_id: {order_id} | status: {col_l}")
-
-        if not order_id or col_l in ["FULFILLED", "CANCELLED"]:
-            new_body.append(row)
+        if not order_id or current_status in ["FULFILLED", "CANCELLED"]:
             continue
 
         try:
@@ -198,12 +190,10 @@ def sync_unfulfilled_rows(store):
             orders = response.json().get("orders", [])
             if not orders:
                 logging.warning(f"⚠️ Order {order_id} not found on Shopify")
-                to_move.append(row)
                 continue
             shopify_order = orders[0]
         except Exception as e:
             logging.error(f"❌ Error fetching {order_id}: {e}")
-            to_move.append(row)
             continue
 
         shopify_status = ""
@@ -212,12 +202,7 @@ def sync_unfulfilled_rows(store):
         elif shopify_order.get("fulfillment_status") == "fulfilled":
             shopify_status = "FULFILLED"
 
-        if len(row) < 12:
-            row += [""] * (12 - len(row))
-        row[11] = shopify_status
-
-        if shopify_status:
-            new_body.append(row)
+        if shopify_status and shopify_status != current_status:
             update_range = f"Sheet1!L{idx}"
             sheets_service.spreadsheets().values().update(
                 spreadsheetId=spreadsheet_id,
@@ -225,22 +210,7 @@ def sync_unfulfilled_rows(store):
                 valueInputOption="USER_ENTERED",
                 body={"values": [[shopify_status]]}
             ).execute()
-            logging.info(f"✅ Marked {order_id} as {shopify_status}")
-        else:
-            to_move.append(row)
-            logging.info(f"📦 Order {order_id} is unfulfilled — moving to bottom")
-
-    updated_data = [header] + new_body + to_move
-
-    sheets_service.spreadsheets().values().update(
-        spreadsheetId=spreadsheet_id,
-        range="Sheet1!A1",
-        valueInputOption="USER_ENTERED",
-        body={"values": updated_data}
-    ).execute()
-
-    logging.info(f"✅ Finished syncing & reordering {store['name']}")
-
+            logging.info(f"✅ Updated order {order_id} → {shopify_status}")
 
 # === WEBHOOK ENDPOINT ===
 @app.post("/webhook/orders-updated")
