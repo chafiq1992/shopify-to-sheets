@@ -166,29 +166,81 @@ def apply_green_background(sheet_id, row_index):
 
 def sync_unfulfilled_rows(store):
     logging.info(f"🔍 Syncing unfulfilled rows for store: {store['name']}")
+    spreadsheet_id = store["spreadsheet_id"]
+
     result = sheets_service.spreadsheets().values().get(
-        spreadsheetId=store["spreadsheet_id"],
+        spreadsheetId=spreadsheet_id,
         range="Sheet1!A:L"
     ).execute()
 
     rows = result.get("values", [])
-    for idx, row in enumerate(rows[1:], start=2):  # Skip header
+    if len(rows) <= 1:
+        return
+
+    header = rows[0]
+    body_rows = rows[1:]
+    new_body = []
+    to_move = []
+
+    for idx, row in enumerate(body_rows, start=2):
         order_id = row[1] if len(row) > 1 else ""
         col_l = row[11].strip().upper() if len(row) > 11 else ""
 
         logging.info(f"🕵️ Checking row {idx} → order_id: {order_id} | status: {col_l}")
 
-        if order_id and col_l != "FULFILLED":
-            if is_fulfilled(order_id, store["shop_domain"], store["api_key"], store["password"]):
-                update_range = f"Sheet1!L{idx}"
-                sheets_service.spreadsheets().values().update(
-                    spreadsheetId=store["spreadsheet_id"],
-                    range=update_range,
-                    valueInputOption="USER_ENTERED",
-                    body={"values": [["FULFILLED"]]}
-                ).execute()
-                apply_green_background(store["spreadsheet_id"], idx)
-                logging.info(f"✅ Synced old order {order_id} → FULFILLED")
+        if not order_id or col_l in ["FULFILLED", "CANCELLED"]:
+            new_body.append(row)
+            continue
+
+        try:
+            url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders.json?name={order_id}"
+            response = requests.get(url)
+            orders = response.json().get("orders", [])
+            if not orders:
+                logging.warning(f"⚠️ Order {order_id} not found on Shopify")
+                to_move.append(row)
+                continue
+            shopify_order = orders[0]
+        except Exception as e:
+            logging.error(f"❌ Error fetching {order_id}: {e}")
+            to_move.append(row)
+            continue
+
+        shopify_status = ""
+        if shopify_order.get("cancelled_at"):
+            shopify_status = "CANCELLED"
+        elif shopify_order.get("fulfillment_status") == "fulfilled":
+            shopify_status = "FULFILLED"
+
+        if len(row) < 12:
+            row += [""] * (12 - len(row))
+        row[11] = shopify_status
+
+        if shopify_status:
+            new_body.append(row)
+            update_range = f"Sheet1!L{idx}"
+            sheets_service.spreadsheets().values().update(
+                spreadsheetId=spreadsheet_id,
+                range=update_range,
+                valueInputOption="USER_ENTERED",
+                body={"values": [[shopify_status]]}
+            ).execute()
+            logging.info(f"✅ Marked {order_id} as {shopify_status}")
+        else:
+            to_move.append(row)
+            logging.info(f"📦 Order {order_id} is unfulfilled — moving to bottom")
+
+    updated_data = [header] + new_body + to_move
+
+    sheets_service.spreadsheets().values().update(
+        spreadsheetId=spreadsheet_id,
+        range="Sheet1!A1",
+        valueInputOption="USER_ENTERED",
+        body={"values": updated_data}
+    ).execute()
+
+    logging.info(f"✅ Finished syncing & reordering {store['name']}")
+
 
 # === WEBHOOK ENDPOINT ===
 @app.post("/webhook/orders-updated")
@@ -224,8 +276,6 @@ async def webhook_orders_updated(
                     status = "CANCELLED"
                 elif order.get("fulfillment_status") == "fulfilled":
                     status = "FULFILLED"
-                elif "ch" in current_tags:
-                    status = "CH"
                 if status:
                     update_range = f"Sheet1!L{idx}"
                     sheets_service.spreadsheets().values().update(
