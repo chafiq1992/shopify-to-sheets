@@ -304,20 +304,31 @@ async def webhook_orders_updated(
         logging.info(f"🚫 Skipping {order_id} — no 'pc' tag")
         return JSONResponse(content={"skipped": True})
 
-    try:
+        try:
         result = sheets_service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id,
             range="Sheet1!A:L"
         ).execute()
         rows = result.get("values", [])
-        existing_orders = [r[1] for r in rows[1:] if len(r) > 1]
+        existing_order_ids = set()
+
+        for row in rows[1:]:  # Skip header
+            if len(row) > 1:
+                existing_order_ids.add(row[1].strip())
     except Exception as e:
         logging.error(f"❌ Failed to load existing orders: {e}")
         return JSONResponse(content={"error": "sheet read failed"})
 
-    # If order already exists in full rows, skip re-export
-    if order_id in existing_orders:
+    order_id = order.get("name", "").strip()
+
+    # If order already exists, skip it
+    if order_id in existing_order_ids:
         logging.info(f"⚠️ Order {order_id} already exists — skipping export")
+        return JSONResponse(content={"skipped": True})
+
+    # Also skip if already fulfilled, cancelled, or closed
+    if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
+        logging.info(f"🚫 Order {order_id} is fulfilled/cancelled/closed — skipping")
         return JSONResponse(content={"skipped": True})
 
     # === EXPORT NEW ORDER ===
