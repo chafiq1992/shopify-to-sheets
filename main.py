@@ -177,7 +177,7 @@ def sync_unfulfilled_rows(store):
     if len(rows) <= 1:
         return
 
-    for idx, row in enumerate(rows[1:], start=2):
+    for idx, row in list(enumerate(rows[1:], start=2)):  # Copy to avoid index shift
         order_id = row[1] if len(row) > 1 else ""
         current_status = row[11].strip().upper() if len(row) > 11 else ""
 
@@ -202,7 +202,7 @@ def sync_unfulfilled_rows(store):
         elif shopify_order.get("fulfillment_status") == "fulfilled":
             shopify_status = "FULFILLED"
 
-        if shopify_status and shopify_status != current_status:
+        if shopify_status:
             update_range = f"Sheet1!L{idx}"
             sheets_service.spreadsheets().values().update(
                 spreadsheetId=spreadsheet_id,
@@ -211,6 +211,39 @@ def sync_unfulfilled_rows(store):
                 body={"values": [[shopify_status]]}
             ).execute()
             logging.info(f"✅ Updated order {order_id} → {shopify_status}")
+        else:
+            # Move to bottom if still unfulfilled
+            logging.info(f"📦 Order {order_id} is unfulfilled — moving to bottom")
+
+            # 1. Delete current row
+            sheets_service.spreadsheets().batchUpdate(
+                spreadsheetId=spreadsheet_id,
+                body={
+                    "requests": [{
+                        "deleteDimension": {
+                            "range": {
+                                "sheetId": 0,
+                                "dimension": "ROWS",
+                                "startIndex": idx - 1,
+                                "endIndex": idx
+                            }
+                        }
+                    }]
+                }
+            ).execute()
+
+            # 2. Append it at the bottom
+            while len(row) < 12:
+                row.append("")
+            sheets_service.spreadsheets().values().append(
+                spreadsheetId=spreadsheet_id,
+                range="Sheet1!A1",
+                valueInputOption="USER_ENTERED",
+                insertDataOption="INSERT_ROWS",
+                body={"values": [row]}
+            ).execute()
+
+            logging.info(f"🔄 Moved order {order_id} to bottom")
 
 # === WEBHOOK ENDPOINT ===
 @app.post("/webhook/orders-updated")
