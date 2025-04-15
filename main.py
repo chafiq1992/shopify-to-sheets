@@ -248,7 +248,6 @@ def sync_unfulfilled_rows(store):
 
     logging.info(f"✅ Reordered {len(fulfilled)} fulfilled and {len(unfulfilled)} unfulfilled orders")
 
-# === WEBHOOK ENDPOINT ===
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(
     request: Request,
@@ -262,7 +261,7 @@ async def webhook_orders_updated(
     body = await request.body()
     order = json.loads(body)
 
-    order_id = order.get("name", "")
+    order_id = order.get("name", "").strip()
     logging.info(f"🔔 Webhook received for order: {order_id}")
 
     tags_str = order.get("tags", "")
@@ -299,19 +298,22 @@ async def webhook_orders_updated(
     except Exception as e:
         logging.error(f"❌ Failed to mark status for {order_id}: {e}")
 
-    # === EXPORT ONLY IF PC TAG IS NEW + ORDER IS OPEN/UNFULFILLED ===
-   if TRIGGER_TAG not in current_tags:
-       logging.info(f"🚫 Skipping {order_id} — no 'pc' tag")
-       return JSONResponse(content={"skipped": True})
-                                 
-   try: 
-       result = sheets_service.spreadsheets().values().get(
+    # === EXPORT ONLY IF: Has 'pc' tag + not fulfilled/cancelled + not already in sheet ===
+    if TRIGGER_TAG not in current_tags:
+        logging.info(f"🚫 Skipping {order_id} — no 'pc' tag")
+        return JSONResponse(content={"skipped": True})
+
+    if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
+        logging.info(f"🚫 Order {order_id} is fulfilled/cancelled/closed — skipping")
+        return JSONResponse(content={"skipped": True})
+
+    try:
+        result = sheets_service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id,
             range="Sheet1!A:L"
         ).execute()
         rows = result.get("values", [])
         existing_order_ids = set()
-
         for row in rows[1:]:  # Skip header
             if len(row) > 1:
                 existing_order_ids.add(row[1].strip())
@@ -319,16 +321,8 @@ async def webhook_orders_updated(
         logging.error(f"❌ Failed to load existing orders: {e}")
         return JSONResponse(content={"error": "sheet read failed"})
 
-    order_id = order.get("name", "").strip()
-
-    # If order already exists, skip it
     if order_id in existing_order_ids:
         logging.info(f"⚠️ Order {order_id} already exists — skipping export")
-        return JSONResponse(content={"skipped": True})
-
-    # Also skip if already fulfilled, cancelled, or closed
-    if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
-        logging.info(f"🚫 Order {order_id} is fulfilled/cancelled/closed — skipping")
         return JSONResponse(content={"skipped": True})
 
     # === EXPORT NEW ORDER ===
@@ -381,8 +375,3 @@ async def webhook_orders_updated(
             logging.info(f"🔄 Finished syncing old orders for {store['name']}")
 
     return JSONResponse(content={"success": True})
-
-# === HEALTH CHECK ===
-@app.get("/ping")
-async def ping():
-    return {"status": "ok"}
