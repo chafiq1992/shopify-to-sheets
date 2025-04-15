@@ -1,368 +1,2431 @@
 {
-  "آسا زاج": "ASSA ZAG",
-  "عدوز": "Adouz",
-  "أفورار": "Afourar",
-  "أغادير": "Agadir",
-  "أجافي": "Agafay",
-  "أكدز": "Agdz",
-  "أغبالو": "Aghbalou",
-  "أغمات": "Aghmat",
-  "اجلو": "Aglou",
-  "اقويم": "Agouim",
-  "أغوراي": "Agourai",
-  "أكلموس": "Aguelmouss",
-  "أحفير": "Ahfir",
-  "عين الله": "Ain Allah",
-  "عين عتيق": "Ain Atiq",
-  "عين بيدا": "Ain Beda",
-  "عين الشكاك": "Ain Cheggag",
-  "عين الشقيف": "Ain Chqef",
-  "عين دوريج": "Ain Dorij",
-  "عين العودة": "Ain El Aouda",
-  "عين حرودة": "Ain Harouda",
-  "عين تاوجدات": "Ain Taoujdate",
-  "آيت أيازا": "Ait Aiaaza",
-  "ايت عميرة": "Ait Amira",
-  "ايت عتاب": "Ait Attab",
-  "آيت بن حدو": "Ait Ben Hdou",
-  "آيت إسحاق": "Ait Ishaq",
-  "آيت ملول": "Ait Melloul",
-  "آيت أورير": "Ait Ourir",
-  "اجدير": "Ajdir",
-  "أكليم": "Aklim",
-  "العروي": "Al aaroui",
-  "الحسيمة": "Al hoceima",
-  "أمزميز": "Amizmiz",
-  "أمسا": "Amsa",
-  "عنزة": "Anza",
-  "أوفوس": "Aoufous",
-  "أولوز": "Aoulouz",
-  "أورير": "Aourir",
-  "أرباوا": "Arbaoua",
-  "ارفود": "Erfoud",
-  "اسني": "Asni",
-  "أصيلة": "Assilah",
-  "أزمور": "Azemmour",
-  "أزيلال": "Azilal",
-  "أزلا": "Azla",
-  "أزرو": "Azrou",
-  "أزرو (أكادير)": "Azrou (agadir)",
-  "باب بيرد": "Bab berred",
-  "باب تازة": "Bab taza",
-  "بلاغويد": "Belaaguid",
-  "بليونش": "Belyounech",
-  "بن جرير": "Ben Guerir",
-  "بني أحمد سطات": "Beni Ahmed settat",
-  "بني ايات": "Beni Ayat",
-  "بني ملال": "Beni Mellal",
-  "بنسليمان": "Bensliman",
-  "بركان": "Berkane",
-  "برشيد": "Berrchid",
-  "بهليل": "Bhalil",
-  "بن الويدان": "Bin El Ouidane",
-  "بيوجرا": "Biougra",
-  "بئر جديد": "Bir Jdid",
-  "بير مزوي": "Bir Mezoui",
-  "بني أحمد شامل": "Bni ahmed chamel",
-  "بني انصار": "Bni ansar",
-  "بوعرفة": "Bouarfa",
-  "بودربالة": "Bouderbala",
-  "بودنيب": "Boudnib",
-  "بوفكران": "Boufakrane",
-  "بويزكارن كلميم": "Bouizakarne Guelmim",
-  "بوجاد": "Boujaad",
-  "بوجدور": "Boujdour",
-  "بوجنيبة": "Boujniba",
-  "بولانوار": "Boulanouare",
-  "بولمان": "Boulemane",
-  "بومالن دادس": "Boumalne Dades",
-  "بومية": "Boumia",
-  "بوسكورة": "Bouskoura",
-  "بوتيني": "Boutini",
-  "بوزنيقة": "Bouznika",
-  "بريكشا": "Brikcha",
-  "بظاظا": "Bzaza",
-  "الدار البيضاء": "Casablanca",
-  "شفشاون": "Chefchaouen",
-  "شيشاوة": "Chichaoua",
-  "شويتر": "Chouiter",
-  "اشتوكة ايت باها": "Chtouka Ait Baha",
-  "داروا": "DAROUA",
-  "الداخلة": "Dakhla",
-  "داليا": "Dalia",
-  "دار بوعزة": "Dar Bouazza",
-  "دار ولد زيدوه": "Dar Ould Zidouh",
-  "دار سي عيسى": "Dar Si Aissa",
-  "دمنات": "Demnate",
-  "دوار زمران": "Douar Zemrane",
-  "الدريوش": "Driouch",
-  "إشميا": "Echemmaia",
-  "العطاوية": "El Attaouia",
-  "البرادية": "El Berradia",
-  "البروج (بني ملال)": "El Borouj (beni mellal)",
-  "الحاج قدور": "El Haj Kaddour",
-  "الحاجب": "El Hajeb",
-  "الهنشان": "El Henchane",
-  "الجديدة": "El Jadida",
-  "الكباب": "El Kebab",
-  "القصيبة": "El Ksiba",
-  "المعاد": "El Maader",
-  "المنصورية": "El Mansouria",
-  "المنزل": "El Menzel",
-  "الويدان": "El Ouidane",
-  "اليوسفية": "El Youssoufia",
-  "العيون الشرقية": "El aioune charkia",
-  "الرشيدية": "Errachidia",
-  "مدينة الرحمة": "Errahma Ville",
-  "الصويرة": "Essaouira",
-  "فرياتا": "Faryata",
-  "فاس": "Fes",
-  "فكيك": "Figuig",
-  "فنيدك": "Fnidek",
-  "فم الأنصار": "Foum El Ansar",
-  "فم عودي": "Foum Oudi",
-  "الفقيه بن صلاح": "Fquih Ben Salah",
-  "غزوة": "Ghazoua",
-  "منطقة كلميمة الرشيدية": "Goulmima regions errachidia",
-  "كلميم": "Guelmim",
-  "جرسيف": "Guercif",
-  "كان بوحسوسن": "Had Bouhssoussen",
-  "كان درعا": "Had Draa",
-  "كان حرارا": "Had Hrara",
-  "ملك سولمي": "Had Swlme",
-  "الحوزية": "Haouzia",
-  "هرهورة": "Harhoura",
-  "هاتان": "Hattane",
-  "هوارة": "Houara",
-  "ايدوملال": "Idaousmlal",
-  "إفران": "Ifrane",
-  "إغريم لعلام": "Ighrem Laalam",
-  "إجوكاك": "Ijoukak",
-  "إيخوريبا": "Ikhoureba",
-  "إيمينتانوت": "Imintanoute",
-  "إيموزار": "Imouzzer",
-  "إمزورين": "Imzouren",
-  "إنزكان": "Inezgane",
-  "إيساجوين": "Issaguen",
-  "الجبهة": "Jebha",
-  "جمعة شيم": "Jemaa Shaim",
-  "جرادة": "Jerada",
-  "جرف الملحة": "Jorf El Melha",
-  "جرف الأصفر": "Jorf Lasfar",
-  "قاع اسراس": "Kaa asrass",
-  "كريات با محمد": "Kariat Ba Mohamed",
-  "قصبة تادلة": "Kasba Tadla",
-  "كيلا ديس سراغنا": "Kelaa Des Sraghna",
-  "قلعة مكونة": "Kelaat Mgouna",
-  "القنيطرة": "Kenitra",
-  "خميس الساحل": "Khemis Sahel",
-  "الخميسات": "Khemissat",
-  "خنيشان": "Khenichate",
-  "خنيفرة": "Khenifra",
-  "خميس زمامرة": "Khmiss Zmamra",
-  "خريبكة": "Khouribga",
-  "قصر صغير": "Ksar Sghir",
-  "القصر الكبير": "Ksar el kebir",
-  "لاغرب": "Laagerb",
-  "لاجانا": "Laajana",
-  "العيون": "Laayoune",
-  "العيون المرسى": "Laayoune El Marsa",
-  "لاغفاف": "Lagfaf",
-  "الجواسيم": "Lagouassem",
-  "لاخساس": "Lakhssas",
-  "لالا ميمونة": "Lala Mimouna",
-  "لالا فاطنة آسفي": "Lalla Fatna Safi",
-  "للا تاكركوست": "Lalla Takerkoust",
-  "العرائش": "Larache",
-  "لقليعة": "Leqliaa",
-  "لودايا": "Loudaya",
-  "ماكرو بلكسيري": "Machroo Belksiri",
-  "مراكش": "Marrakech",
-  "مرتيل": "Martil",
-  "ماسا": "Massa",
-  "شاطئ مازاغان": "Mazagan Beach",
-  "مضيق": "Mdiq",
-  "ميديونا": "Mediona",
-  "مجات": "Mejjat",
-  "مكناس": "Meknes",
-  "ميلوسا": "Meloussa",
-  "مرزوكة": "Merzouga",
-  "ميزكيتا دي لوامرا": "Mezquita de Laouamra",
-  "مفسيس": "Mfassis",
-  "مغيلة": "Mghila",
-  "مهيا": "Mhaya",
-  "ميدار": "Midar",
-  "ميدلت": "Midelt",
-  "ميرلفت": "Mirleft",
-  "ميسور": "Missour",
-  "المحمدية": "Mouhammedia",
-  "مول البرجي": "Moul El Bergui",
-  "مولاي عبد الله أمغار": "Moulay Abellah Amghar",
-  "مولاي إدريس زرهون": "Moulay Idriss Zerhoun",
-  "مولاي يعقوب": "Moulay Yaacoub",
-  "مولاي بوسلهام": "Moulay bouselham",
-  "مريرت": "Mrirt",
-  "مزودية": "Mzoudia",
-  "الناظور": "Nador",
-  "نكوب": "Nkoub",
-  "النواصر": "Nouaceur",
-  "الوليدية": "Oualidia",
-  "أوويزيغت": "Ouaouizeght",
-  "واومانا": "Ouaoumana",
-  "ورزازات": "Ouarzazate",
-  "وادي أمليل": "Oued Amlil",
-  "واد المالح": "Oued El Maleh",
-  "واد زم": "Oued Zem",
-  "واد لاو": "Oued laou",
-  "أويلمس": "Ouelmess",
-  "وزان": "Ouezzane",
-  "ويجان": "Ouijjane",
-  "ويركان": "Ouirgane",
-  "وجدة": "Oujda",
-  "أولاد بارحيل": "Oulad Barrehil",
-  "أولاد جرار": "Oulad Jerrar",
-  "أولاد تيما": "Oulad Teima",
-  "أولاد يوسف": "Oulad Youssef",
-  "أولاد زمام": "Oulad Zmam",
-  "ولد زيدوه": "Ould Zidouh",
-  "أولاد عبد الله": "Ouled Abdellah",
-  "أولاد علي": "Ouled Ali",
-  "أولاد عمران": "Ouled Amrane",
-  "أولاد عياد": "Ouled Ayad",
-  "أولاد عزوز": "Ouled Azzouz",
-  "أولاد فرج": "Ouled Fraj",
-  "أولاد كناو": "Ouled Gnaou",
-  "أولاد حسون": "Ouled Hassoun",
-  "أولاد إيشي": "Ouled Iyiche",
-  "أولاد مبارك": "Ouled Mbarek",
-  "أولاد مراح": "Ouled Mrah",
-  "أولاد سعيد الواد": "Ouled Said El Oued",
-  "أولاد الطيب": "Ouled Tayeb",
-  "أولاد يحيى": "Ouled Yhya",
-  "اونارا": "Ounara",
-  "أونانا": "Ounnana",
-  "أوريكا": "Ourika",
-  "أوتة الحاج": "Outat el haj",
-  "أوزود": "Ouzoud",
-  "الرباط": "Rabat",
-  "رأس العين": "Ras El Ain",
-  "رأس الماء (فاس)": "Ras El Ma (fes)",
-  "رأس الماء (وجدة)": "Ras el ma (oujda)",
-  "رسموكا": "Rasmouka",
-  "رياض السلام": "Riad Essalam",
-  "رباط إل خير": "Ribate El Kheir",
-  "ثري": "Rich",
-  "الريصاني": "Rissani",
-  "روماني": "Roumani",
-  "صبا عيون": "Sabaa Aiyoun",
-  "آسفي": "Safi",
-  "السعيدية": "Saidia",
-  "سلا الجديدة": "Sala Al Jadida",
-  "أُوكَازيُون": "Sale",
-  "سبت بن ساسي": "Sebt Ben Sassi",
-  "سبت القردان": "Sebt El Guerdane",
-  "سبت غزوة": "Sebt Gzoula",
-  "صفرو": "Sefrou",
-  "سلوان": "Selouane",
-  "سطات": "Settat",
-  "ستي فاطمة": "Setti-Fatma",
-  "سيد لمختار": "Sid Lmokhtar",
-  "سيدي عبد الله غياط": "Sidi Abdellah Ghiat",
-  "سيدي عيسى بن علي": "Sidi Aissa Ben Ali",
-  "سيدي علال التازي": "Sidi Alal Tazi",
-  "سيدي علي": "Sidi Ali",
-  "سيدي علال البحراوي": "Sidi Allal Bahraoui",
-  "سيدي بنور": "Sidi Bennour",
-  "سيدي بيبي": "Sidi Bibi",
-  "سيدي بو عثمان": "Sidi Bou Othmane",
-  "سيدي بوقنادل": "Sidi Bouknadel",
-  "سيدي بولفديل": "Sidi Boulfdail",
-  "سيدي بوزيد": "Sidi Bouzid",
-  "سيدي حرازم": "Sidi Harazem",
-  "سيدي افني": "Sidi Ifni",
-  "سيدي جابر": "Sidi Jaber",
-  "سيدي قاسم": "Sidi Kacem",
-  "سيدي كاوكي": "Sidi Kaouki",
-  "سيدي واجاج": "Sidi Ouagague",
-  "سيدي رحال": "Sidi Rehal",
-  "سيدي سليمان": "Sidi Sliman",
-  "سيدي الطيبي": "Sidi Taibi",
-  "سيدي يحيى غريب": "Sidi Yahya Ghareb",
-  "سيدي يحيى زعير": "Sidi Yahya Zaer",
-  "سيدي زوين": "Sidi Zouine",
-  "الصخيرات": "Skhirat",
-  "صخور الرحامنة": "Skhour Rehamna",
-  "سكورة": "Skoura",
-  "السمارة": "Smara",
-  "سميمو": "Smimou",
-  "السويلة": "Souihla",
-  "سوق الأربعاء غريب": "Souk Larbaa ghareb",
-  "سوق سبت أولاد نعمة": "Souk Sebt Oulad Nemma",
-  "ستيهات": "Stehat",
-  "تاتا": "TATA",
-  "تشرفات": "Tachrafat",
-  "تادوارت": "Tadouart",
-  "تافراوت": "Tafraoute",
-  "تافتاخت": "Taftacht",
-  "تغازوت": "Taghazout",
-  "تاغزرت": "Tagzert",
-  "طحلة": "Tahla",
-  "تحناوت": "Tahnaout",
-  "تالوين": "Taliouine",
-  "تالسينتي": "Talssinte",
-  "تماريس": "Tamaris",
-  "تمدجوست": "Tamdghoust",
-  "تامليلت": "Tamelelt",
-  "تامسنا": "Tamesna",
-  "تامالت": "Tamlalte",
-  "تامنصورت": "Tamnsourt",
-  "تامسلوحت": "Tamslouht",
-  "تان تان": "Tan Tan",
-  "تانانت (بني ملال)": "Tanant (beni-mellal)",
-  "طنجة": "Tanger",
-  "تنوغة": "Tanougha",
-  "تانتان إل الوطية": "Tantan El Ouatia",
-  "تاوجدات": "Taoujdate",
-  "تاونات": "Taounate",
-  "طرفاية": "Tarfaya",
-  "تارغويست": "Targuist",
-  "تارودانت": "Taroudant",
-  "تاساوت": "Tassaout",
-  "تازة": "Taza",
-  "تازارين": "Tazarine",
-  "تازنخت": "Tazenakht",
-  "تمارة": "Temara",
-  "تمسيا": "Temsia",
-  "تندرارا": "Tendrara",
-  "تطوان": "Tetouan",
-  "تيفيلت": "Tifelt",
-  "تيجيرت": "Tighirt",
-  "تيغسالين": "Tighssaline",
-  "تيموليلت": "Timoulilte",
-  "تنجداد": "Tinejdad",
-  "تنغير": "Tinghir",
-  "تيزولين": "Tinzouline",
-  "تيط مليل": "Tit Mellil",
-  "تزنيت": "Tiznit",
-  "تنين شتوكة": "Tnine Chtouka",
-  "تنين الغربية": "Tnine Lgharbia",
-  "توندوت": "Toundoute",
-  "زاكورة": "Zagora",
-  "زائدة": "Zaida",
-  "زايو": "Zaio",
-  "زاوية الشيخ": "Zaouiat Cheikh",
-  "زاوية سيدي إسماعيل": "Zaouiat Sidi Smail",
-  "زغنغان": "Zeghanghane",
-  "زومي": "Zoumi",
-  "بني بوعياش": "bni Bouayach",
-  "جارا برشيد": "el gara berrchid",
-  "فوم جمعة": "foum jemaa",
-  "hraouine": "hraouine",
-  "com.imgharne": "imgharne",
-  "كهف نصور": "kahf nssour",
-  "لبروج": "lbrouj",
-  "سيدي عبد": "sidi abd",
-  "سيدي حجاج سطات": "sidi hajaj settat",
-  "سيدي حجاج تيط مليل": "sidi hajaj tit mlil",
-  "تاوريرت": "taourirt"
+  "آسا زاج": [
+    "ASSA ZAG",
+    "Assazag",
+    "assazag",
+    "آسا زاج",
+    "اسا زاج",
+    "اسازاج"
+  ],
+  "عدوز": [
+    "Adouz",
+    "adouz",
+    "عدوز"
+  ],
+  "أفورار": [
+    "Afourar",
+    "afourar",
+    "أفورار",
+    "افورار"
+  ],
+  "أغادير": [
+    "Agadir",
+    "agadir",
+    "agadire",
+    "أغادير",
+    "أگادير",
+    "اغادير",
+    "اكادير",
+    "اݣادير"
+  ],
+  "أجافي": [
+    "Agafay",
+    "agafay",
+    "أجافي",
+    "اجافي"
+  ],
+  "أكدز": [
+    "Agdz",
+    "agdz",
+    "أكدز",
+    "اكدز"
+  ],
+  "أغبالو": [
+    "Aghbalou",
+    "aghbalou",
+    "أغبالو",
+    "اغبالو"
+  ],
+  "أغمات": [
+    "Aghmat",
+    "aghmat",
+    "أغمات",
+    "اغمات"
+  ],
+  "اجلو": [
+    "Aglou",
+    "aglou",
+    "اجلو"
+  ],
+  "اقويم": [
+    "Agouim",
+    "agouim",
+    "اقويم"
+  ],
+  "أغوراي": [
+    "Agourai",
+    "agourai",
+    "أغوراي",
+    "اغوراي"
+  ],
+  "أكلموس": [
+    "Aguelmouss",
+    "aguelmouss",
+    "أكلموس",
+    "اكلموس"
+  ],
+  "أحفير": [
+    "Ahfir",
+    "ahfir",
+    "أحفير",
+    "احفير"
+  ],
+  "عين الله": [
+    "Ain Allah",
+    "Ainallah",
+    "ainallah",
+    "عين الله",
+    "عينالله"
+  ],
+  "عين عتيق": [
+    "Ain Atiq",
+    "Ainatiq",
+    "ainatiq",
+    "عين عتيق",
+    "عينعتيق"
+  ],
+  "عين بيدا": [
+    "Ain Beda",
+    "Ainbeda",
+    "ainbeda",
+    "عين بيدا",
+    "عينبيدا"
+  ],
+  "عين الشكاك": [
+    "Ain Cheggag",
+    "Aincheggag",
+    "aincheggag",
+    "عين الشكاك",
+    "عينالشكاك"
+  ],
+  "عين الشقيف": [
+    "Ain Chqef",
+    "Ainchqef",
+    "ainchqef",
+    "عين الشقيف",
+    "عينالشقيف"
+  ],
+  "عين دوريج": [
+    "Ain Dorij",
+    "Aindorij",
+    "aindorij",
+    "عين دوريج",
+    "عيندوريج"
+  ],
+  "عين العودة": [
+    "Ain El Aouda",
+    "Ainelaouda",
+    "ainelaouda",
+    "عين العودة",
+    "عين العوده",
+    "عينالعوده"
+  ],
+  "عين حرودة": [
+    "Ain Harouda",
+    "Ainharouda",
+    "ainharouda",
+    "عين حرودة",
+    "عين حروده",
+    "عينحروده"
+  ],
+  "عين تاوجدات": [
+    "Ain Taoujdate",
+    "Aintaoujdate",
+    "aintaoujdate",
+    "عين تاوجدات",
+    "عينتاوجدات"
+  ],
+  "آيت أيازا": [
+    "Ait Aiaaza",
+    "Aitaiaaza",
+    "aitaiaaza",
+    "آيت أيازا",
+    "ايت ايازا",
+    "ايتايازا"
+  ],
+  "ايت عميرة": [
+    "Ait Amira",
+    "Aitamira",
+    "aitamira",
+    "ايت عميرة",
+    "ايت عميره",
+    "ايتعميره"
+  ],
+  "ايت عتاب": [
+    "Ait Attab",
+    "Aitattab",
+    "aitattab",
+    "ايت عتاب",
+    "ايتعتاب"
+  ],
+  "آيت بن حدو": [
+    "Ait Ben Hdou",
+    "Aitbenhdou",
+    "aitbenhdou",
+    "آيت بن حدو",
+    "ايت بن حدو",
+    "ايتبنحدو"
+  ],
+  "آيت إسحاق": [
+    "Ait Ishaq",
+    "Aitishaq",
+    "aitishaq",
+    "آيت إسحاق",
+    "ايت اسحاق",
+    "ايتاسحاق"
+  ],
+  "آيت ملول": [
+    "Ait Melloul",
+    "Aitmelloul",
+    "aitmelloul",
+    "آيت ملول",
+    "ايت ملول",
+    "ايتملول"
+  ],
+  "آيت أورير": [
+    "Ait Ourir",
+    "Aitourir",
+    "aitourir",
+    "آيت أورير",
+    "ايت اورير",
+    "ايتاورير"
+  ],
+  "اجدير": [
+    "Ajdir",
+    "ajdir",
+    "اجدير"
+  ],
+  "أكليم": [
+    "Aklim",
+    "aklim",
+    "أكليم",
+    "اكليم"
+  ],
+  "العروي": [
+    "Al aaroui",
+    "Alaaroui",
+    "alaaroui",
+    "العروي"
+  ],
+  "الحسيمة": [
+    "Al hoceima",
+    "Alhoceima",
+    "alhoceima",
+    "الحسيمة",
+    "الحسيمه"
+  ],
+  "أمزميز": [
+    "Amizmiz",
+    "amizmiz",
+    "أمزميز",
+    "امزميز"
+  ],
+  "أمسا": [
+    "Amsa",
+    "amsa",
+    "أمسا",
+    "امسا"
+  ],
+  "عنزة": [
+    "Anza",
+    "anza",
+    "عنزة",
+    "عنزه"
+  ],
+  "أوفوس": [
+    "Aoufous",
+    "aoufous",
+    "أوفوس",
+    "اوفوس"
+  ],
+  "أولوز": [
+    "Aoulouz",
+    "aoulouz",
+    "أولوز",
+    "اولوز"
+  ],
+  "أورير": [
+    "Aourir",
+    "aourir",
+    "أورير",
+    "اورير"
+  ],
+  "أرباوا": [
+    "Arbaoua",
+    "arbaoua",
+    "أرباوا",
+    "ارباوا"
+  ],
+  "ارفود": [
+    "Erfoud",
+    "erfoud",
+    "ارفود"
+  ],
+  "اسني": [
+    "Asni",
+    "asni",
+    "اسني"
+  ],
+  "أصيلة": [
+    "Assilah",
+    "assilah",
+    "أصيلة",
+    "اصيله"
+  ],
+  "أزمور": [
+    "Azemmour",
+    "azemmour",
+    "أزمور",
+    "ازمور"
+  ],
+  "أزيلال": [
+    "Azilal",
+    "azilal",
+    "أزيلال",
+    "ازيلال"
+  ],
+  "أزلا": [
+    "Azla",
+    "azla",
+    "أزلا",
+    "ازلا"
+  ],
+  "أزرو": [
+    "Azrou",
+    "azrou",
+    "أزرو",
+    "ازرو"
+  ],
+  "أزرو (أكادير)": [
+    "Azrou (agadir)",
+    "Azrou(Agadir)",
+    "agadir",
+    "agadire",
+    "azrou(agadir)",
+    "أزرو (أكادير)",
+    "أگادير",
+    "ازرو (اكادير)",
+    "ازرو(اكادير)",
+    "اكادير",
+    "اݣادير"
+  ],
+  "باب بيرد": [
+    "Bab berred",
+    "Babberred",
+    "babberred",
+    "باب بيرد",
+    "باببيرد"
+  ],
+  "باب تازة": [
+    "Bab taza",
+    "Babtaza",
+    "babtaza",
+    "باب تازة",
+    "باب تازه",
+    "بابتازه"
+  ],
+  "بلاغويد": [
+    "Belaaguid",
+    "belaaguid",
+    "بلاغويد"
+  ],
+  "بليونش": [
+    "Belyounech",
+    "belyounech",
+    "بليونش"
+  ],
+  "بن جرير": [
+    "Ben Guerir",
+    "Benguerir",
+    "benguerir",
+    "بن جرير",
+    "بنجرير"
+  ],
+  "بني أحمد سطات": [
+    "Beni Ahmed settat",
+    "Beniahmedsettat",
+    "beniahmedsettat",
+    "بن أحمد سطات",
+    "بني أحمد سطات",
+    "بني احمد سطات",
+    "بنياحمدسطات",
+    "بنيي أحمد سطات"
+  ],
+  "بني ايات": [
+    "Beni Ayat",
+    "Beniayat",
+    "beniayat",
+    "بن ايات",
+    "بني ايات",
+    "بنيايات",
+    "بنيي ايات"
+  ],
+  "بني ملال": [
+    "Beni Mellal",
+    "Benimellal",
+    "benimellal",
+    "بن ملال",
+    "بني ملال",
+    "بنيملال",
+    "بنيي ملال"
+  ],
+  "بنسليمان": [
+    "Bensliman",
+    "bensliman",
+    "بنسليمان"
+  ],
+  "بركان": [
+    "Berkane",
+    "berkane",
+    "بركان"
+  ],
+  "برشيد": [
+    "Berrchid",
+    "berrchid",
+    "برشيد"
+  ],
+  "بهليل": [
+    "Bhalil",
+    "bhalil",
+    "بهليل"
+  ],
+  "بن الويدان": [
+    "Bin El Ouidane",
+    "Binelouidane",
+    "binelouidane",
+    "بن الويدان",
+    "بنالويدان"
+  ],
+  "بيوجرا": [
+    "Biougra",
+    "biougra",
+    "بيوجرا"
+  ],
+  "بئر جديد": [
+    "Bir Jdid",
+    "Birjdid",
+    "birjdid",
+    "بئر جديد",
+    "بير جديد",
+    "بيرجديد"
+  ],
+  "بير مزوي": [
+    "Bir Mezoui",
+    "Birmezoui",
+    "birmezoui",
+    "بير مزوي",
+    "بيرمزوي"
+  ],
+  "بني أحمد شامل": [
+    "Bni ahmed chamel",
+    "Bniahmedchamel",
+    "bniahmedchamel",
+    "بن أحمد شامل",
+    "بني أحمد شامل",
+    "بني احمد شامل",
+    "بنياحمدشامل",
+    "بنيي أحمد شامل"
+  ],
+  "بني انصار": [
+    "Bni ansar",
+    "Bniansar",
+    "bniansar",
+    "بن انصار",
+    "بني انصار",
+    "بنيانصار",
+    "بنيي انصار"
+  ],
+  "بوعرفة": [
+    "Bouarfa",
+    "bouarfa",
+    "بوعرفة",
+    "بوعرفه"
+  ],
+  "بودربالة": [
+    "Bouderbala",
+    "bouderbala",
+    "بودربالة",
+    "بودرباله"
+  ],
+  "بودنيب": [
+    "Boudnib",
+    "boudnib",
+    "بودنيب"
+  ],
+  "بوفكران": [
+    "Boufakrane",
+    "boufakrane",
+    "بوفكران"
+  ],
+  "بويزكارن كلميم": [
+    "Bouizakarne Guelmim",
+    "Bouizakarneguelmim",
+    "bouizakarneguelmim",
+    "بويزكارن كلميم",
+    "بويزكارنكلميم"
+  ],
+  "بوجاد": [
+    "Boujaad",
+    "boujaad",
+    "بوجاد"
+  ],
+  "بوجدور": [
+    "Boujdour",
+    "boujdour",
+    "بوجدور"
+  ],
+  "بوجنيبة": [
+    "Boujniba",
+    "boujniba",
+    "بوجنيبة",
+    "بوجنيبه"
+  ],
+  "بولانوار": [
+    "Boulanouare",
+    "boulanouare",
+    "بولانوار"
+  ],
+  "بولمان": [
+    "Boulemane",
+    "boulemane",
+    "بولمان"
+  ],
+  "بومالن دادس": [
+    "Boumalne Dades",
+    "Boumalnedades",
+    "boumalnedades",
+    "بومالن دادس",
+    "بومالندادس"
+  ],
+  "بومية": [
+    "Boumia",
+    "boumia",
+    "بومية",
+    "بوميه"
+  ],
+  "بوسكورة": [
+    "Bouskoura",
+    "bouskoura",
+    "بوسكورة",
+    "بوسكوره"
+  ],
+  "بوتيني": [
+    "Boutini",
+    "boutini",
+    "بوتيني"
+  ],
+  "بوزنيقة": [
+    "Bouznika",
+    "bouznika",
+    "بوزنيقة",
+    "بوزنيقه"
+  ],
+  "بريكشا": [
+    "Brikcha",
+    "brikcha",
+    "بريكشا"
+  ],
+  "بظاظا": [
+    "Bzaza",
+    "bzaza",
+    "بظاظا"
+  ],
+  "الدار البيضاء": [
+    "Casa",
+    "Casablanca",
+    "casablanca",
+    "dar lbeida",
+    "lbd",
+    "lbida",
+    "الدار البيضاء",
+    "الدار لبيضاء",
+    "الدارالبيضاء",
+    "دار البيضاء",
+    "كازا"
+  ],
+  "شفشاون": [
+    "Chefchaouen",
+    "chefchaouen",
+    "شفشاون"
+  ],
+  "شيشاوة": [
+    "Chichaoua",
+    "chichaoua",
+    "شيشاوة",
+    "شيشاوه"
+  ],
+  "شويتر": [
+    "Chouiter",
+    "chouiter",
+    "شويتر"
+  ],
+  "اشتوكة ايت باها": [
+    "Chtouka Ait Baha",
+    "Chtoukaaitbaha",
+    "chtoukaaitbaha",
+    "اشتوكة ايت باها",
+    "اشتوكه ايت باها",
+    "اشتوكهايتباها"
+  ],
+  "داروا": [
+    "DAROUA",
+    "Daroua",
+    "daroua",
+    "داروا"
+  ],
+  "الداخلة": [
+    "Dakhla",
+    "dakhla",
+    "الداخلة",
+    "الداخله"
+  ],
+  "داليا": [
+    "Dalia",
+    "dalia",
+    "داليا"
+  ],
+  "دار بوعزة": [
+    "Dar Bouazza",
+    "Darbouazza",
+    "darbouazza",
+    "دار بوعزة",
+    "دار بوعزه",
+    "داربوعزه"
+  ],
+  "دار ولد زيدوه": [
+    "Dar Ould Zidouh",
+    "Darouldzidouh",
+    "darouldzidouh",
+    "دار ولد زيدوه",
+    "دارولدزيدوه"
+  ],
+  "دار سي عيسى": [
+    "Dar Si Aissa",
+    "Darsiaissa",
+    "darsiaissa",
+    "دار سي عيسى",
+    "دار سي عيسي",
+    "دارسيعيسي"
+  ],
+  "دمنات": [
+    "Demnate",
+    "demnate",
+    "دمنات"
+  ],
+  "دوار زمران": [
+    "Douar Zemrane",
+    "Douarzemrane",
+    "douarzemrane",
+    "دوار زمران",
+    "دوارزمران"
+  ],
+  "الدريوش": [
+    "Driouch",
+    "driouch",
+    "الدريوش"
+  ],
+  "إشميا": [
+    "Echemmaia",
+    "echemmaia",
+    "إشميا",
+    "اشميا"
+  ],
+  "العطاوية": [
+    "El Attaouia",
+    "Elattaouia",
+    "elattaouia",
+    "العطاوية",
+    "العطاويه"
+  ],
+  "البرادية": [
+    "El Berradia",
+    "Elberradia",
+    "elberradia",
+    "البرادية",
+    "البراديه"
+  ],
+  "البروج (بني ملال)": [
+    "El Borouj (beni mellal)",
+    "Elborouj(Benimellal)",
+    "elborouj(benimellal)",
+    "البروج (بن ملال)",
+    "البروج (بني ملال)",
+    "البروج (بنيي ملال)",
+    "البروج(بنيملال)"
+  ],
+  "الحاج قدور": [
+    "El Haj Kaddour",
+    "Elhajkaddour",
+    "elhajkaddour",
+    "الحاج قدور",
+    "الحاجقدور"
+  ],
+  "الحاجب": [
+    "El Hajeb",
+    "Elhajeb",
+    "elhajeb",
+    "الحاجب"
+  ],
+  "الهنشان": [
+    "El Henchane",
+    "Elhenchane",
+    "elhenchane",
+    "الهنشان"
+  ],
+  "الجديدة": [
+    "El Jadida",
+    "Eljadida",
+    "eljadida",
+    "الجديدة",
+    "الجديده"
+  ],
+  "الكباب": [
+    "El Kebab",
+    "Elkebab",
+    "elkebab",
+    "الكباب"
+  ],
+  "القصيبة": [
+    "El Ksiba",
+    "Elksiba",
+    "elksiba",
+    "القصيبة",
+    "القصيبه"
+  ],
+  "المعاد": [
+    "El Maader",
+    "Elmaader",
+    "elmaader",
+    "المعاد"
+  ],
+  "المنصورية": [
+    "El Mansouria",
+    "Elmansouria",
+    "elmansouria",
+    "المنصورية",
+    "المنصوريه"
+  ],
+  "المنزل": [
+    "El Menzel",
+    "Elmenzel",
+    "elmenzel",
+    "المنزل"
+  ],
+  "الويدان": [
+    "El Ouidane",
+    "Elouidane",
+    "elouidane",
+    "الويدان"
+  ],
+  "اليوسفية": [
+    "El Youssoufia",
+    "Elyoussoufia",
+    "elyoussoufia",
+    "اليوسفية",
+    "اليوسفيه"
+  ],
+  "العيون الشرقية": [
+    "El aioune charkia",
+    "Elaiounecharkia",
+    "elaiounecharkia",
+    "العيون الشرقية",
+    "العيون الشرقيه",
+    "العيونالشرقيه"
+  ],
+  "الرشيدية": [
+    "Errachidia",
+    "errachidia",
+    "الرشيدية",
+    "الرشيديه"
+  ],
+  "مدينة الرحمة": [
+    "Errahma Ville",
+    "Errahmaville",
+    "errahmaville",
+    "مدينة الرحمة",
+    "مدينه الرحمه",
+    "مدينهالرحمه"
+  ],
+  "الصويرة": [
+    "Essaouira",
+    "essaouira",
+    "الصويرة",
+    "الصويره"
+  ],
+  "فرياتا": [
+    "Faryata",
+    "faryata",
+    "فرياتا"
+  ],
+  "فاس": [
+    "Fes",
+    "fass",
+    "fes",
+    "فاس",
+    "فايس"
+  ],
+  "فكيك": [
+    "Figuig",
+    "figuig",
+    "فكيك"
+  ],
+  "فنيدك": [
+    "Fnidek",
+    "fnidek",
+    "فنيدك"
+  ],
+  "فم الأنصار": [
+    "Foum El Ansar",
+    "Foumelansar",
+    "foumelansar",
+    "فم الأنصار",
+    "فم الانصار",
+    "فمالانصار"
+  ],
+  "فم عودي": [
+    "Foum Oudi",
+    "Foumoudi",
+    "foumoudi",
+    "فم عودي",
+    "فمعودي"
+  ],
+  "الفقيه بن صلاح": [
+    "Fquih Ben Salah",
+    "Fquihbensalah",
+    "fquihbensalah",
+    "الفقيه بن صلاح",
+    "الفقيهبنصلاح"
+  ],
+  "غزوة": [
+    "Ghazoua",
+    "ghazoua",
+    "غزوة",
+    "غزوه"
+  ],
+  "منطقة كلميمة الرشيدية": [
+    "Goulmima regions errachidia",
+    "Goulmimaregionserrachidia",
+    "goulmimaregionserrachidia",
+    "منطقة كلميمة الرشيدية",
+    "منطقه كلميمه الرشيديه",
+    "منطقهكلميمهالرشيديه"
+  ],
+  "كلميم": [
+    "Guelmim",
+    "guelmim",
+    "كلميم"
+  ],
+  "جرسيف": [
+    "Guercif",
+    "guercif",
+    "جرسيف"
+  ],
+  "كان بوحسوسن": [
+    "Had Bouhssoussen",
+    "Hadbouhssoussen",
+    "hadbouhssoussen",
+    "كان بوحسوسن",
+    "كانبوحسوسن"
+  ],
+  "كان درعا": [
+    "Had Draa",
+    "Haddraa",
+    "haddraa",
+    "كان درعا",
+    "كاندرعا"
+  ],
+  "كان حرارا": [
+    "Had Hrara",
+    "Hadhrara",
+    "hadhrara",
+    "كان حرارا",
+    "كانحرارا"
+  ],
+  "ملك سولمي": [
+    "Had Swlme",
+    "Hadswlme",
+    "hadswlme",
+    "ملك سولمي",
+    "ملكسولمي"
+  ],
+  "الحوزية": [
+    "Haouzia",
+    "haouzia",
+    "الحوزية",
+    "الحوزيه"
+  ],
+  "هرهورة": [
+    "Harhoura",
+    "harhoura",
+    "هرهورة",
+    "هرهوره"
+  ],
+  "هاتان": [
+    "Hattane",
+    "hattane",
+    "هاتان"
+  ],
+  "هوارة": [
+    "Houara",
+    "houara",
+    "هوارة",
+    "هواره"
+  ],
+  "ايدوملال": [
+    "Idaousmlal",
+    "idaousmlal",
+    "ايدوملال"
+  ],
+  "إفران": [
+    "Ifrane",
+    "ifrane",
+    "إفران",
+    "افران"
+  ],
+  "إغريم لعلام": [
+    "Ighrem Laalam",
+    "Ighremlaalam",
+    "ighremlaalam",
+    "إغريم لعلام",
+    "اغريم لعلام",
+    "اغريملعلام"
+  ],
+  "إجوكاك": [
+    "Ijoukak",
+    "ijoukak",
+    "إجوكاك",
+    "اجوكاك"
+  ],
+  "إيخوريبا": [
+    "Ikhoureba",
+    "ikhoureba",
+    "إيخوريبا",
+    "ايخوريبا"
+  ],
+  "إيمينتانوت": [
+    "Imintanoute",
+    "imintanoute",
+    "إيمينتانوت",
+    "ايمينتانوت"
+  ],
+  "إيموزار": [
+    "Imouzzer",
+    "imouzzer",
+    "إيموزار",
+    "ايموزار"
+  ],
+  "إمزورين": [
+    "Imzouren",
+    "imzouren",
+    "إمزورين",
+    "امزورين"
+  ],
+  "إنزكان": [
+    "Inezgane",
+    "inezgane",
+    "إنزكان",
+    "انزكان"
+  ],
+  "إيساجوين": [
+    "Issaguen",
+    "issaguen",
+    "إيساجوين",
+    "ايساجوين"
+  ],
+  "الجبهة": [
+    "Jebha",
+    "jebha",
+    "الجبهة",
+    "الجبهه"
+  ],
+  "جمعة شيم": [
+    "Jemaa Shaim",
+    "Jemaashaim",
+    "jemaashaim",
+    "جمعة شيم",
+    "جمعه شيم",
+    "جمعهشيم"
+  ],
+  "جرادة": [
+    "Jerada",
+    "jerada",
+    "جرادة",
+    "جراده"
+  ],
+  "جرف الملحة": [
+    "Jorf El Melha",
+    "Jorfelmelha",
+    "jorfelmelha",
+    "جرف الملحة",
+    "جرف الملحه",
+    "جرفالملحه"
+  ],
+  "جرف الأصفر": [
+    "Jorf Lasfar",
+    "Jorflasfar",
+    "jorflasfar",
+    "جرف الأصفر",
+    "جرف الاصفر",
+    "جرفالاصفر"
+  ],
+  "قاع اسراس": [
+    "Kaa asrass",
+    "Kaaasrass",
+    "kaaasrass",
+    "قاع اسراس",
+    "قاعاسراس"
+  ],
+  "كريات با محمد": [
+    "Kariat Ba Mohamed",
+    "Kariatbamohamed",
+    "kariatbamohamed",
+    "كريات با محمد",
+    "كرياتبامحمد"
+  ],
+  "قصبة تادلة": [
+    "Kasba Tadla",
+    "Kasbatadla",
+    "kasbatadla",
+    "قصبة تادلة",
+    "قصبه تادله",
+    "قصبهتادله"
+  ],
+  "كيلا ديس سراغنا": [
+    "Kelaa Des Sraghna",
+    "Kelaadessraghna",
+    "kelaadessraghna",
+    "كيلا ديس سراغنا",
+    "كيلاديسسراغنا"
+  ],
+  "قلعة مكونة": [
+    "Kelaat Mgouna",
+    "Kelaatmgouna",
+    "kelaatmgouna",
+    "قلعة مكونة",
+    "قلعه مكونه",
+    "قلعهمكونه"
+  ],
+  "القنيطرة": [
+    "Kenitra",
+    "kenitra",
+    "القنيطرة",
+    "القنيطره"
+  ],
+  "خميس الساحل": [
+    "Khemis Sahel",
+    "Khemissahel",
+    "khemissahel",
+    "خميس الساحل",
+    "خميسالساحل"
+  ],
+  "الخميسات": [
+    "Khemissat",
+    "khemissat",
+    "الخميسات"
+  ],
+  "خنيشان": [
+    "Khenichate",
+    "khenichate",
+    "خنيشان"
+  ],
+  "خنيفرة": [
+    "Khenifra",
+    "khenifra",
+    "خنيفرة",
+    "خنيفره"
+  ],
+  "خميس زمامرة": [
+    "Khmiss Zmamra",
+    "Khmisszmamra",
+    "khmisszmamra",
+    "خميس زمامرة",
+    "خميس زمامره",
+    "خميسزمامره"
+  ],
+  "خريبكة": [
+    "Khouribga",
+    "khouribga",
+    "خريبكة",
+    "خريبكه"
+  ],
+  "قصر صغير": [
+    "Ksar Sghir",
+    "Ksarsghir",
+    "ksarsghir",
+    "قصر صغير",
+    "قصرصغير"
+  ],
+  "القصر الكبير": [
+    "Ksar el kebir",
+    "Ksarelkebir",
+    "ksarelkebir",
+    "القصر الكبير",
+    "القصرالكبير"
+  ],
+  "لاغرب": [
+    "Laagerb",
+    "laagerb",
+    "لاغرب"
+  ],
+  "لاجانا": [
+    "Laajana",
+    "laajana",
+    "لاجانا"
+  ],
+  "العيون": [
+    "Laayoune",
+    "laayoune",
+    "العيون"
+  ],
+  "العيون المرسى": [
+    "Laayoune El Marsa",
+    "Laayouneelmarsa",
+    "laayouneelmarsa",
+    "العيون المرسى",
+    "العيون المرسي",
+    "العيونالمرسي"
+  ],
+  "لاغفاف": [
+    "Lagfaf",
+    "lagfaf",
+    "لاغفاف"
+  ],
+  "الجواسيم": [
+    "Lagouassem",
+    "lagouassem",
+    "الجواسيم"
+  ],
+  "لاخساس": [
+    "Lakhssas",
+    "lakhssas",
+    "لاخساس"
+  ],
+  "لالا ميمونة": [
+    "Lala Mimouna",
+    "Lalamimouna",
+    "lalamimouna",
+    "لالا ميمونة",
+    "لالا ميمونه",
+    "لالاميمونه"
+  ],
+  "لالا فاطنة آسفي": [
+    "Lalla Fatna Safi",
+    "Lallafatnasafi",
+    "lallafatnasafi",
+    "لالا فاطنة آسفي",
+    "لالا فاطنه اسفي",
+    "لالافاطنهاسفي"
+  ],
+  "للا تاكركوست": [
+    "Lalla Takerkoust",
+    "Lallatakerkoust",
+    "lallatakerkoust",
+    "للا تاكركوست",
+    "للاتاكركوست"
+  ],
+  "العرائش": [
+    "Larache",
+    "larache",
+    "العرائش",
+    "العرايش"
+  ],
+  "لقليعة": [
+    "Leqliaa",
+    "leqliaa",
+    "لقليعة",
+    "لقليعه"
+  ],
+  "لودايا": [
+    "Loudaya",
+    "loudaya",
+    "لودايا"
+  ],
+  "ماكرو بلكسيري": [
+    "Machroo Belksiri",
+    "Machroobelksiri",
+    "machroobelksiri",
+    "ماكرو بلكسيري",
+    "ماكروبلكسيري"
+  ],
+  "مراكش": [
+    "Marrakech",
+    "marakech",
+    "marrakch",
+    "marrakech",
+    "marrakesh",
+    "mrrkch",
+    "ماراكيش",
+    "مراكش"
+  ],
+  "مرتيل": [
+    "Martil",
+    "martil",
+    "مرتيل"
+  ],
+  "ماسا": [
+    "Massa",
+    "massa",
+    "ماسا"
+  ],
+  "شاطئ مازاغان": [
+    "Mazagan Beach",
+    "Mazaganbeach",
+    "mazaganbeach",
+    "شاطئ مازاغان",
+    "شاطي مازاغان",
+    "شاطيمازاغان"
+  ],
+  "مضيق": [
+    "Mdiq",
+    "mdiq",
+    "مضيق"
+  ],
+  "ميديونا": [
+    "Mediona",
+    "mediona",
+    "ميديونا"
+  ],
+  "مجات": [
+    "Mejjat",
+    "mejjat",
+    "مجات"
+  ],
+  "مكناس": [
+    "Meknes",
+    "meknes",
+    "مكناس"
+  ],
+  "ميلوسا": [
+    "Meloussa",
+    "meloussa",
+    "ميلوسا"
+  ],
+  "مرزوكة": [
+    "Merzouga",
+    "merzouga",
+    "مرزوكة",
+    "مرزوكه"
+  ],
+  "ميزكيتا دي لوامرا": [
+    "Mezquita de Laouamra",
+    "Mezquitadelaouamra",
+    "mezquitadelaouamra",
+    "ميزكيتا دي لوامرا",
+    "ميزكيتاديلوامرا"
+  ],
+  "مفسيس": [
+    "Mfassis",
+    "mfassis",
+    "مفسيس"
+  ],
+  "مغيلة": [
+    "Mghila",
+    "mghila",
+    "مغيلة",
+    "مغيله"
+  ],
+  "مهيا": [
+    "Mhaya",
+    "mhaya",
+    "مهيا"
+  ],
+  "ميدار": [
+    "Midar",
+    "midar",
+    "ميدار"
+  ],
+  "ميدلت": [
+    "Midelt",
+    "midelt",
+    "ميدلت"
+  ],
+  "ميرلفت": [
+    "Mirleft",
+    "mirleft",
+    "ميرلفت"
+  ],
+  "ميسور": [
+    "Missour",
+    "missour",
+    "ميسور"
+  ],
+  "المحمدية": [
+    "Mouhammedia",
+    "mouhammedia",
+    "المحمدية",
+    "المحمديه"
+  ],
+  "مول البرجي": [
+    "Moul El Bergui",
+    "Moulelbergui",
+    "moulelbergui",
+    "مول البرجي",
+    "مولالبرجي"
+  ],
+  "مولاي عبد الله أمغار": [
+    "Moulay Abellah Amghar",
+    "Moulayabellahamghar",
+    "moulayabellahamghar",
+    "مولاي عبد الله أمغار",
+    "مولاي عبد الله امغار",
+    "مولايعبداللهامغار"
+  ],
+  "مولاي إدريس زرهون": [
+    "Moulay Idriss Zerhoun",
+    "Moulayidrisszerhoun",
+    "moulayidrisszerhoun",
+    "مولاي إدريس زرهون",
+    "مولاي ادريس زرهون",
+    "مولايادريسزرهون"
+  ],
+  "مولاي يعقوب": [
+    "Moulay Yaacoub",
+    "Moulayyaacoub",
+    "moulayyaacoub",
+    "مولاي يعقوب",
+    "مولاييعقوب"
+  ],
+  "مولاي بوسلهام": [
+    "Moulay bouselham",
+    "Moulaybouselham",
+    "moulaybouselham",
+    "مولاي بوسلهام",
+    "مولايبوسلهام"
+  ],
+  "مريرت": [
+    "Mrirt",
+    "mrirt",
+    "مريرت"
+  ],
+  "مزودية": [
+    "Mzoudia",
+    "mzoudia",
+    "مزودية",
+    "مزوديه"
+  ],
+  "الناظور": [
+    "Nador",
+    "nador",
+    "الناظور"
+  ],
+  "نكوب": [
+    "Nkoub",
+    "nkoub",
+    "نكوب"
+  ],
+  "النواصر": [
+    "Nouaceur",
+    "nouaceur",
+    "النواصر"
+  ],
+  "الوليدية": [
+    "Oualidia",
+    "oualidia",
+    "الوليدية",
+    "الوليديه"
+  ],
+  "أوويزيغت": [
+    "Ouaouizeght",
+    "ouaouizeght",
+    "أوويزيغت",
+    "اوويزيغت"
+  ],
+  "واومانا": [
+    "Ouaoumana",
+    "ouaoumana",
+    "واومانا"
+  ],
+  "ورزازات": [
+    "Ouarzazate",
+    "ouarzazate",
+    "ورزازات"
+  ],
+  "وادي أمليل": [
+    "Oued Amlil",
+    "Ouedamlil",
+    "ouedamlil",
+    "وادي أمليل",
+    "وادي امليل",
+    "واديامليل"
+  ],
+  "واد المالح": [
+    "Oued El Maleh",
+    "Ouedelmaleh",
+    "ouedelmaleh",
+    "واد المالح",
+    "وادالمالح"
+  ],
+  "واد زم": [
+    "Oued Zem",
+    "Ouedzem",
+    "ouedzem",
+    "واد زم",
+    "وادزم"
+  ],
+  "واد لاو": [
+    "Oued laou",
+    "Ouedlaou",
+    "ouedlaou",
+    "واد لاو",
+    "وادلاو"
+  ],
+  "أويلمس": [
+    "Ouelmess",
+    "ouelmess",
+    "أويلمس",
+    "اويلمس"
+  ],
+  "وزان": [
+    "Ouezzane",
+    "ouezzane",
+    "وزان"
+  ],
+  "ويجان": [
+    "Ouijjane",
+    "ouijjane",
+    "ويجان"
+  ],
+  "ويركان": [
+    "Ouirgane",
+    "ouirgane",
+    "ويركان"
+  ],
+  "وجدة": [
+    "Oujda",
+    "oujda",
+    "وجدة",
+    "وجده"
+  ],
+  "أولاد بارحيل": [
+    "Oulad Barrehil",
+    "Ouladbarrehil",
+    "ouladbarrehil",
+    "أولاد بارحيل",
+    "اولاد بارحيل",
+    "اولادبارحيل"
+  ],
+  "أولاد جرار": [
+    "Oulad Jerrar",
+    "Ouladjerrar",
+    "ouladjerrar",
+    "أولاد جرار",
+    "اولاد جرار",
+    "اولادجرار"
+  ],
+  "أولاد تيما": [
+    "Oulad Teima",
+    "Ouladteima",
+    "ouladteima",
+    "أولاد تيما",
+    "اولاد تيما",
+    "اولادتيما"
+  ],
+  "أولاد يوسف": [
+    "Oulad Youssef",
+    "Ouladyoussef",
+    "ouladyoussef",
+    "أولاد يوسف",
+    "اولاد يوسف",
+    "اولاديوسف"
+  ],
+  "أولاد زمام": [
+    "Oulad Zmam",
+    "Ouladzmam",
+    "ouladzmam",
+    "أولاد زمام",
+    "اولاد زمام",
+    "اولادزمام"
+  ],
+  "ولد زيدوه": [
+    "Ould Zidouh",
+    "Ouldzidouh",
+    "ouldzidouh",
+    "ولد زيدوه",
+    "ولدزيدوه"
+  ],
+  "أولاد عبد الله": [
+    "Ouled Abdellah",
+    "Ouledabdellah",
+    "ouledabdellah",
+    "أولاد عبد الله",
+    "اولاد عبد الله",
+    "اولادعبدالله"
+  ],
+  "أولاد علي": [
+    "Ouled Ali",
+    "Ouledali",
+    "ouledali",
+    "أولاد علي",
+    "اولاد علي",
+    "اولادعلي"
+  ],
+  "أولاد عمران": [
+    "Ouled Amrane",
+    "Ouledamrane",
+    "ouledamrane",
+    "أولاد عمران",
+    "اولاد عمران",
+    "اولادعمران"
+  ],
+  "أولاد عياد": [
+    "Ouled Ayad",
+    "Ouledayad",
+    "ouledayad",
+    "أولاد عياد",
+    "اولاد عياد",
+    "اولادعياد"
+  ],
+  "أولاد عزوز": [
+    "Ouled Azzouz",
+    "Ouledazzouz",
+    "ouledazzouz",
+    "أولاد عزوز",
+    "اولاد عزوز",
+    "اولادعزوز"
+  ],
+  "أولاد فرج": [
+    "Ouled Fraj",
+    "Ouledfraj",
+    "ouledfraj",
+    "أولاد فرج",
+    "اولاد فرج",
+    "اولادفرج"
+  ],
+  "أولاد كناو": [
+    "Ouled Gnaou",
+    "Ouledgnaou",
+    "ouledgnaou",
+    "أولاد كناو",
+    "اولاد كناو",
+    "اولادكناو"
+  ],
+  "أولاد حسون": [
+    "Ouled Hassoun",
+    "Ouledhassoun",
+    "ouledhassoun",
+    "أولاد حسون",
+    "اولاد حسون",
+    "اولادحسون"
+  ],
+  "أولاد إيشي": [
+    "Ouled Iyiche",
+    "Oulediyiche",
+    "oulediyiche",
+    "أولاد إيشي",
+    "اولاد ايشي",
+    "اولادايشي"
+  ],
+  "أولاد مبارك": [
+    "Ouled Mbarek",
+    "Ouledmbarek",
+    "ouledmbarek",
+    "أولاد مبارك",
+    "اولاد مبارك",
+    "اولادمبارك"
+  ],
+  "أولاد مراح": [
+    "Ouled Mrah",
+    "Ouledmrah",
+    "ouledmrah",
+    "أولاد مراح",
+    "اولاد مراح",
+    "اولادمراح"
+  ],
+  "أولاد سعيد الواد": [
+    "Ouled Said El Oued",
+    "Ouledsaideloued",
+    "ouledsaideloued",
+    "أولاد سعيد الواد",
+    "اولاد سعيد الواد",
+    "اولادسعيدالواد"
+  ],
+  "أولاد الطيب": [
+    "Ouled Tayeb",
+    "Ouledtayeb",
+    "ouledtayeb",
+    "أولاد الطيب",
+    "اولاد الطيب",
+    "اولادالطيب"
+  ],
+  "أولاد يحيى": [
+    "Ouled Yhya",
+    "Ouledyhya",
+    "ouledyhya",
+    "أولاد يحيى",
+    "اولاد يحيي",
+    "اولاديحيي"
+  ],
+  "اونارا": [
+    "Ounara",
+    "ounara",
+    "اونارا"
+  ],
+  "أونانا": [
+    "Ounnana",
+    "ounnana",
+    "أونانا",
+    "اونانا"
+  ],
+  "أوريكا": [
+    "Ourika",
+    "ourika",
+    "أوريكا",
+    "اوريكا"
+  ],
+  "أوتة الحاج": [
+    "Outat el haj",
+    "Outatelhaj",
+    "outatelhaj",
+    "أوتة الحاج",
+    "اوته الحاج",
+    "اوتهالحاج"
+  ],
+  "أوزود": [
+    "Ouzoud",
+    "ouzoud",
+    "أوزود",
+    "اوزود"
+  ],
+  "الرباط": [
+    "Rabat",
+    "rabat",
+    "الرباط"
+  ],
+  "رأس العين": [
+    "Ras El Ain",
+    "Raselain",
+    "raselain",
+    "رأس العين",
+    "راس العين",
+    "راسالعين"
+  ],
+  "رأس الماء (فاس)": [
+    "Ras El Ma (fes)",
+    "Raselma(Fes)",
+    "fass",
+    "fes",
+    "raselma(fes)",
+    "رأس الماء (فاس)",
+    "راس الماء (فاس)",
+    "راسالماء(فاس)",
+    "فاس",
+    "فايس"
+  ],
+  "رأس الماء (وجدة)": [
+    "Ras el ma (oujda)",
+    "Raselma(Oujda)",
+    "raselma(oujda)",
+    "رأس الماء (وجدة)",
+    "راس الماء (وجده)",
+    "راسالماء(وجده)"
+  ],
+  "رسموكا": [
+    "Rasmouka",
+    "rasmouka",
+    "رسموكا"
+  ],
+  "رياض السلام": [
+    "Riad Essalam",
+    "Riadessalam",
+    "riadessalam",
+    "رياض السلام",
+    "رياضالسلام"
+  ],
+  "رباط إل خير": [
+    "Ribate El Kheir",
+    "Ribateelkheir",
+    "ribateelkheir",
+    "رباط إل خير",
+    "رباط ال خير",
+    "رباطالخير"
+  ],
+  "ثري": [
+    "Rich",
+    "rich",
+    "ثري"
+  ],
+  "الريصاني": [
+    "Rissani",
+    "rissani",
+    "الريصاني"
+  ],
+  "روماني": [
+    "Roumani",
+    "roumani",
+    "روماني"
+  ],
+  "صبا عيون": [
+    "Sabaa Aiyoun",
+    "Sabaaaiyoun",
+    "sabaaaiyoun",
+    "صبا عيون",
+    "صباعيون"
+  ],
+  "آسفي": [
+    "Safi",
+    "safi",
+    "آسفي",
+    "اسفي"
+  ],
+  "السعيدية": [
+    "Saidia",
+    "saidia",
+    "السعيدية",
+    "السعيديه"
+  ],
+  "سلا الجديدة": [
+    "Sala Al Jadida",
+    "Salaaljadida",
+    "salaaljadida",
+    "سلا الجديدة",
+    "سلا الجديده",
+    "سلاالجديده"
+  ],
+  "أُوكَازيُون": [
+    "Sale",
+    "sale",
+    "أُوكَازيُون",
+    "اُوكَازيُون"
+  ],
+  "سبت بن ساسي": [
+    "Sebt Ben Sassi",
+    "Sebtbensassi",
+    "sebtbensassi",
+    "سبت بن ساسي",
+    "سبتبنساسي"
+  ],
+  "سبت القردان": [
+    "Sebt El Guerdane",
+    "Sebtelguerdane",
+    "sebtelguerdane",
+    "سبت القردان",
+    "سبتالقردان"
+  ],
+  "سبت غزوة": [
+    "Sebt Gzoula",
+    "Sebtgzoula",
+    "sebtgzoula",
+    "سبت غزوة",
+    "سبت غزوه",
+    "سبتغزوه"
+  ],
+  "صفرو": [
+    "Sefrou",
+    "sefrou",
+    "صفرو"
+  ],
+  "سلوان": [
+    "Selouane",
+    "selouane",
+    "سلوان"
+  ],
+  "سطات": [
+    "Settat",
+    "settat",
+    "سطات"
+  ],
+  "ستي فاطمة": [
+    "Setti-Fatma",
+    "setti-fatma",
+    "ستي فاطمة",
+    "ستي فاطمه",
+    "ستيفاطمه"
+  ],
+  "سيد لمختار": [
+    "Sid Lmokhtar",
+    "Sidlmokhtar",
+    "sidlmokhtar",
+    "سيد لمختار",
+    "سيدلمختار"
+  ],
+  "سيدي عبد الله غياط": [
+    "Sidi Abdellah Ghiat",
+    "Sidiabdellahghiat",
+    "sidiabdellahghiat",
+    "سدي عبد الله غياط",
+    "سديي عبد الله غياط",
+    "سيد عبد الله غياط",
+    "سيدي عبد الله غياط",
+    "سيديعبداللهغياط"
+  ],
+  "سيدي عيسى بن علي": [
+    "Sidi Aissa Ben Ali",
+    "Sidiaissabenali",
+    "sidiaissabenali",
+    "سدي عيسى بن علي",
+    "سديي عيسى بن علي",
+    "سيد عيسى بن علي",
+    "سيدي عيسى بن علي",
+    "سيدي عيسي بن علي",
+    "سيديعيسيبنعلي"
+  ],
+  "سيدي علال التازي": [
+    "Sidi Alal Tazi",
+    "Sidialaltazi",
+    "sidialaltazi",
+    "سدي علال التازي",
+    "سديي علال التازي",
+    "سيد علال التازي",
+    "سيدي علال التازي",
+    "سيديعلالالتازي"
+  ],
+  "سيدي علي": [
+    "Sidi Ali",
+    "Sidiali",
+    "sidiali",
+    "سدي علي",
+    "سديي علي",
+    "سيد علي",
+    "سيدي علي",
+    "سيديعلي"
+  ],
+  "سيدي علال البحراوي": [
+    "Sidi Allal Bahraoui",
+    "Sidiallalbahraoui",
+    "sidiallalbahraoui",
+    "سدي علال البحراوي",
+    "سديي علال البحراوي",
+    "سيد علال البحراوي",
+    "سيدي علال البحراوي",
+    "سيديعلالالبحراوي"
+  ],
+  "سيدي بنور": [
+    "Sidi Bennour",
+    "Sidibennour",
+    "sidibennour",
+    "سدي بنور",
+    "سديي بنور",
+    "سيد بنور",
+    "سيدي بنور",
+    "سيديبنور"
+  ],
+  "سيدي بيبي": [
+    "Sidi Bibi",
+    "Sidibibi",
+    "sidibibi",
+    "سدي بيبي",
+    "سديي بيبي",
+    "سيد بيبي",
+    "سيدي بيبي",
+    "سيديبيبي"
+  ],
+  "سيدي بو عثمان": [
+    "Sidi Bou Othmane",
+    "Sidibouothmane",
+    "sidibouothmane",
+    "سدي بو عثمان",
+    "سديي بو عثمان",
+    "سيد بو عثمان",
+    "سيدي بو عثمان",
+    "سيديبوعثمان"
+  ],
+  "سيدي بوقنادل": [
+    "Sidi Bouknadel",
+    "Sidibouknadel",
+    "sidibouknadel",
+    "سدي بوقنادل",
+    "سديي بوقنادل",
+    "سيد بوقنادل",
+    "سيدي بوقنادل",
+    "سيديبوقنادل"
+  ],
+  "سيدي بولفديل": [
+    "Sidi Boulfdail",
+    "Sidiboulfdail",
+    "sidiboulfdail",
+    "سدي بولفديل",
+    "سديي بولفديل",
+    "سيد بولفديل",
+    "سيدي بولفديل",
+    "سيديبولفديل"
+  ],
+  "سيدي بوزيد": [
+    "Sidi Bouzid",
+    "Sidibouzid",
+    "sidibouzid",
+    "سدي بوزيد",
+    "سديي بوزيد",
+    "سيد بوزيد",
+    "سيدي بوزيد",
+    "سيديبوزيد"
+  ],
+  "سيدي حرازم": [
+    "Sidi Harazem",
+    "Sidiharazem",
+    "sidiharazem",
+    "سدي حرازم",
+    "سديي حرازم",
+    "سيد حرازم",
+    "سيدي حرازم",
+    "سيديحرازم"
+  ],
+  "سيدي افني": [
+    "Sidi Ifni",
+    "Sidiifni",
+    "sidiifni",
+    "سدي افني",
+    "سديي افني",
+    "سيد افني",
+    "سيدي افني",
+    "سيديافني"
+  ],
+  "سيدي جابر": [
+    "Sidi Jaber",
+    "Sidijaber",
+    "sidijaber",
+    "سدي جابر",
+    "سديي جابر",
+    "سيد جابر",
+    "سيدي جابر",
+    "سيديجابر"
+  ],
+  "سيدي قاسم": [
+    "Sidi Kacem",
+    "Sidikacem",
+    "sidikacem",
+    "سدي قاسم",
+    "سديي قاسم",
+    "سيد قاسم",
+    "سيدي قاسم",
+    "سيديقاسم"
+  ],
+  "سيدي كاوكي": [
+    "Sidi Kaouki",
+    "Sidikaouki",
+    "sidikaouki",
+    "سدي كاوكي",
+    "سديي كاوكي",
+    "سيد كاوكي",
+    "سيدي كاوكي",
+    "سيديكاوكي"
+  ],
+  "سيدي واجاج": [
+    "Sidi Ouagague",
+    "Sidiouagague",
+    "sidiouagague",
+    "سدي واجاج",
+    "سديي واجاج",
+    "سيد واجاج",
+    "سيدي واجاج",
+    "سيديواجاج"
+  ],
+  "سيدي رحال": [
+    "Sidi Rehal",
+    "Sidirehal",
+    "sidirehal",
+    "سدي رحال",
+    "سديي رحال",
+    "سيد رحال",
+    "سيدي رحال",
+    "سيديرحال"
+  ],
+  "سيدي سليمان": [
+    "Sidi Sliman",
+    "Sidisliman",
+    "sidisliman",
+    "سدي سليمان",
+    "سديي سليمان",
+    "سيد سليمان",
+    "سيدي سليمان",
+    "سيديسليمان"
+  ],
+  "سيدي الطيبي": [
+    "Sidi Taibi",
+    "Siditaibi",
+    "siditaibi",
+    "سدي الطيبي",
+    "سديي الطيبي",
+    "سيد الطيبي",
+    "سيدي الطيبي",
+    "سيديالطيبي"
+  ],
+  "سيدي يحيى غريب": [
+    "Sidi Yahya Ghareb",
+    "Sidiyahyaghareb",
+    "sidiyahyaghareb",
+    "سدي يحيى غريب",
+    "سديي يحيى غريب",
+    "سيد يحيى غريب",
+    "سيدي يحيى غريب",
+    "سيدي يحيي غريب",
+    "سيدييحييغريب"
+  ],
+  "سيدي يحيى زعير": [
+    "Sidi Yahya Zaer",
+    "Sidiyahyazaer",
+    "sidiyahyazaer",
+    "سدي يحيى زعير",
+    "سديي يحيى زعير",
+    "سيد يحيى زعير",
+    "سيدي يحيى زعير",
+    "سيدي يحيي زعير",
+    "سيدييحييزعير"
+  ],
+  "سيدي زوين": [
+    "Sidi Zouine",
+    "Sidizouine",
+    "sidizouine",
+    "سدي زوين",
+    "سديي زوين",
+    "سيد زوين",
+    "سيدي زوين",
+    "سيديزوين"
+  ],
+  "الصخيرات": [
+    "Skhirat",
+    "skhirat",
+    "الصخيرات"
+  ],
+  "صخور الرحامنة": [
+    "Skhour Rehamna",
+    "Skhourrehamna",
+    "skhourrehamna",
+    "صخور الرحامنة",
+    "صخور الرحامنه",
+    "صخورالرحامنه"
+  ],
+  "سكورة": [
+    "Skoura",
+    "skoura",
+    "سكورة",
+    "سكوره"
+  ],
+  "السمارة": [
+    "Smara",
+    "smara",
+    "السمارة",
+    "السماره"
+  ],
+  "سميمو": [
+    "Smimou",
+    "smimou",
+    "سميمو"
+  ],
+  "السويلة": [
+    "Souihla",
+    "souihla",
+    "السويلة",
+    "السويله"
+  ],
+  "سوق الأربعاء غريب": [
+    "Souk Larbaa ghareb",
+    "Souklarbaaghareb",
+    "souklarbaaghareb",
+    "سوق الأربعاء غريب",
+    "سوق الاربعاء غريب",
+    "سوقالاربعاءغريب"
+  ],
+  "سوق سبت أولاد نعمة": [
+    "Souk Sebt Oulad Nemma",
+    "Souksebtouladnemma",
+    "souksebtouladnemma",
+    "سوق سبت أولاد نعمة",
+    "سوق سبت اولاد نعمه",
+    "سوقسبتاولادنعمه"
+  ],
+  "ستيهات": [
+    "Stehat",
+    "stehat",
+    "ستيهات"
+  ],
+  "تاتا": [
+    "TATA",
+    "Tata",
+    "tata",
+    "تاتا"
+  ],
+  "تشرفات": [
+    "Tachrafat",
+    "tachrafat",
+    "تشرفات"
+  ],
+  "تادوارت": [
+    "Tadouart",
+    "tadouart",
+    "تادوارت"
+  ],
+  "تافراوت": [
+    "Tafraoute",
+    "tafraoute",
+    "تافراوت"
+  ],
+  "تافتاخت": [
+    "Taftacht",
+    "taftacht",
+    "تافتاخت"
+  ],
+  "تغازوت": [
+    "Taghazout",
+    "taghazout",
+    "تغازوت"
+  ],
+  "تاغزرت": [
+    "Tagzert",
+    "tagzert",
+    "تاغزرت"
+  ],
+  "طحلة": [
+    "Tahla",
+    "tahla",
+    "طحلة",
+    "طحله"
+  ],
+  "تحناوت": [
+    "Tahnaout",
+    "tahnaout",
+    "تحناوت"
+  ],
+  "تالوين": [
+    "Taliouine",
+    "taliouine",
+    "تالوين"
+  ],
+  "تالسينتي": [
+    "Talssinte",
+    "talssinte",
+    "تالسينتي"
+  ],
+  "تماريس": [
+    "Tamaris",
+    "tamaris",
+    "تماريس"
+  ],
+  "تمدجوست": [
+    "Tamdghoust",
+    "tamdghoust",
+    "تمدجوست"
+  ],
+  "تامليلت": [
+    "Tamelelt",
+    "tamelelt",
+    "تامليلت"
+  ],
+  "تامسنا": [
+    "Tamesna",
+    "tamesna",
+    "تامسنا"
+  ],
+  "تامالت": [
+    "Tamlalte",
+    "tamlalte",
+    "تامالت"
+  ],
+  "تامنصورت": [
+    "Tamnsourt",
+    "tamnsourt",
+    "تامنصورت"
+  ],
+  "تامسلوحت": [
+    "Tamslouht",
+    "tamslouht",
+    "تامسلوحت"
+  ],
+  "تان تان": [
+    "Tan Tan",
+    "Tantan",
+    "tantan",
+    "تان تان",
+    "تانتان"
+  ],
+  "تانانت (بني ملال)": [
+    "Tanant (beni-mellal)",
+    "Tanant(Beni-Mellal)",
+    "tanant(beni-mellal)",
+    "تانانت (بن ملال)",
+    "تانانت (بني ملال)",
+    "تانانت (بنيي ملال)",
+    "تانانت(بنيملال)"
+  ],
+  "طنجة": [
+    "Tanger",
+    "tanger",
+    "طنجة",
+    "طنجه"
+  ],
+  "تنوغة": [
+    "Tanougha",
+    "tanougha",
+    "تنوغة",
+    "تنوغه"
+  ],
+  "تانتان إل الوطية": [
+    "Tantan El Ouatia",
+    "Tantanelouatia",
+    "tantanelouatia",
+    "تانتان إل الوطية",
+    "تانتان ال الوطيه",
+    "تانتانالالوطيه"
+  ],
+  "تاوجدات": [
+    "Taoujdate",
+    "taoujdate",
+    "تاوجدات"
+  ],
+  "تاونات": [
+    "Taounate",
+    "taounate",
+    "تاونات"
+  ],
+  "طرفاية": [
+    "Tarfaya",
+    "tarfaya",
+    "طرفاية",
+    "طرفايه"
+  ],
+  "تارغويست": [
+    "Targuist",
+    "targuist",
+    "تارغويست"
+  ],
+  "تارودانت": [
+    "Taroudant",
+    "taroudant",
+    "تارودانت"
+  ],
+  "تاساوت": [
+    "Tassaout",
+    "tassaout",
+    "تاساوت"
+  ],
+  "تازة": [
+    "Taza",
+    "taza",
+    "تازة",
+    "تازه"
+  ],
+  "تازارين": [
+    "Tazarine",
+    "tazarine",
+    "تازارين"
+  ],
+  "تازنخت": [
+    "Tazenakht",
+    "tazenakht",
+    "تازنخت"
+  ],
+  "تمارة": [
+    "Temara",
+    "temara",
+    "تمارة",
+    "تماره"
+  ],
+  "تمسيا": [
+    "Temsia",
+    "temsia",
+    "تمسيا"
+  ],
+  "تندرارا": [
+    "Tendrara",
+    "tendrara",
+    "تندرارا"
+  ],
+  "تطوان": [
+    "Tetouan",
+    "tetouan",
+    "تطوان"
+  ],
+  "تيفيلت": [
+    "Tifelt",
+    "tifelt",
+    "تيفيلت"
+  ],
+  "تيجيرت": [
+    "Tighirt",
+    "tighirt",
+    "تيجيرت"
+  ],
+  "تيغسالين": [
+    "Tighssaline",
+    "tighssaline",
+    "تيغسالين"
+  ],
+  "تيموليلت": [
+    "Timoulilte",
+    "timoulilte",
+    "تيموليلت"
+  ],
+  "تنجداد": [
+    "Tinejdad",
+    "tinejdad",
+    "تنجداد"
+  ],
+  "تنغير": [
+    "Tinghir",
+    "tinghir",
+    "تنغير"
+  ],
+  "تيزولين": [
+    "Tinzouline",
+    "tinzouline",
+    "تيزولين"
+  ],
+  "تيط مليل": [
+    "Tit Mellil",
+    "Titmellil",
+    "titmellil",
+    "تيط مليل",
+    "تيطمليل"
+  ],
+  "تزنيت": [
+    "Tiznit",
+    "tiznit",
+    "تزنيت"
+  ],
+  "تنين شتوكة": [
+    "Tnine Chtouka",
+    "Tninechtouka",
+    "tninechtouka",
+    "تنين شتوكة",
+    "تنين شتوكه",
+    "تنينشتوكه"
+  ],
+  "تنين الغربية": [
+    "Tnine Lgharbia",
+    "Tninelgharbia",
+    "tninelgharbia",
+    "تنين الغربية",
+    "تنين الغربيه",
+    "تنينالغربيه"
+  ],
+  "توندوت": [
+    "Toundoute",
+    "toundoute",
+    "توندوت"
+  ],
+  "زاكورة": [
+    "Zagora",
+    "zagora",
+    "زاكورة",
+    "زاكوره"
+  ],
+  "زائدة": [
+    "Zaida",
+    "zaida",
+    "زائدة",
+    "زايده"
+  ],
+  "زايو": [
+    "Zaio",
+    "zaio",
+    "زايو"
+  ],
+  "زاوية الشيخ": [
+    "Zaouiat Cheikh",
+    "Zaouiatcheikh",
+    "zaouiatcheikh",
+    "زاوية الشيخ",
+    "زاويه الشيخ",
+    "زاويهالشيخ"
+  ],
+  "زاوية سيدي إسماعيل": [
+    "Zaouiat Sidi Smail",
+    "Zaouiatsidismail",
+    "zaouiatsidismail",
+    "زاوية سدي إسماعيل",
+    "زاوية سديي إسماعيل",
+    "زاوية سيد إسماعيل",
+    "زاوية سيدي إسماعيل",
+    "زاويه سيدي اسماعيل",
+    "زاويهسيدياسماعيل"
+  ],
+  "زغنغان": [
+    "Zeghanghane",
+    "zeghanghane",
+    "زغنغان"
+  ],
+  "زومي": [
+    "Zoumi",
+    "zoumi",
+    "زومي"
+  ],
+  "بني بوعياش": [
+    "Bnibouayach",
+    "bni Bouayach",
+    "bnibouayach",
+    "بن بوعياش",
+    "بني بوعياش",
+    "بنيبوعياش",
+    "بنيي بوعياش"
+  ],
+  "جارا برشيد": [
+    "Elgaraberrchid",
+    "el gara berrchid",
+    "elgaraberrchid",
+    "جارا برشيد",
+    "جارابرشيد"
+  ],
+  "فوم جمعة": [
+    "Foumjemaa",
+    "foum jemaa",
+    "foumjemaa",
+    "فوم جمعة",
+    "فوم جمعه",
+    "فومجمعه"
+  ],
+  "hraouine": [
+    "Hraouine",
+    "hraouine"
+  ],
+  "com.imgharne": [
+    "Imgharne",
+    "com.imgharne",
+    "imgharne"
+  ],
+  "كهف نصور": [
+    "Kahfnssour",
+    "kahf nssour",
+    "kahfnssour",
+    "كهف نصور",
+    "كهفنصور"
+  ],
+  "لبروج": [
+    "Lbrouj",
+    "lbrouj",
+    "لبروج"
+  ],
+  "سيدي عبد": [
+    "Sidiabd",
+    "sidi abd",
+    "sidiabd",
+    "سدي عبد",
+    "سديي عبد",
+    "سيد عبد",
+    "سيدي عبد",
+    "سيديعبد"
+  ],
+  "سيدي حجاج سطات": [
+    "Sidihajajsettat",
+    "sidi hajaj settat",
+    "sidihajajsettat",
+    "سدي حجاج سطات",
+    "سديي حجاج سطات",
+    "سيد حجاج سطات",
+    "سيدي حجاج سطات",
+    "سيديحجاجسطات"
+  ],
+  "سيدي حجاج تيط مليل": [
+    "Sidihajajtitmlil",
+    "sidi hajaj tit mlil",
+    "sidihajajtitmlil",
+    "سدي حجاج تيط مليل",
+    "سديي حجاج تيط مليل",
+    "سيد حجاج تيط مليل",
+    "سيدي حجاج تيط مليل",
+    "سيديحجاجتيطمليل"
+  ],
+  "تاوريرت": [
+    "Taourirt",
+    "taourirt",
+    "تاوريرت"
+  ]
 }
