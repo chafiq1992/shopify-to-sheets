@@ -305,7 +305,7 @@ async def webhook_orders_updated(
        return JSONResponse(content={"skipped": True})
                                  
    try: 
-        result = sheets_service.spreadsheets().values().get(
+       result = sheets_service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id,
             range="Sheet1!A:L"
         ).execute()
