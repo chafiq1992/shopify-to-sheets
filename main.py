@@ -259,7 +259,6 @@ async def webhook_orders_updated(
                         body={"values": [[status]]}
                     ).execute()
                     if status == "FULFILLED":
-                        apply_green_background(spreadsheet_id, idx)
                     logging.info(f"🎨 Updated row {order_id} → {status}")
                 break
     except Exception as e:
