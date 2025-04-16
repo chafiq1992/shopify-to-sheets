@@ -133,64 +133,6 @@ def is_fulfilled(order_id, shop_domain, api_key, password):
     except Exception as e:
         logging.error(f"⚠️ Failed to fetch order {order_id} from {shop_domain}: {e}")
         return False
-
-def sync_unfulfilled_rows(store):
-    logging.info(f"🔍 Syncing unfulfilled rows for store: {store['name']}")
-    spreadsheet_id = store["spreadsheet_id"]
-
-    result = sheets_service.spreadsheets().values().get(
-        spreadsheetId=spreadsheet_id,
-        range="Sheet1!A:L"
-    ).execute()
-
-    rows = result.get("values", [])
-    if len(rows) <= 1:
-        return
-
-    cache = {}
-    last_api_call = 0
-    rows_to_move = []
-
-    for idx, row in list(enumerate(rows[1:], start=2)):
-        order_id = row[1] if len(row) > 1 else ""
-        current_status = row[11].strip().upper() if len(row) > 11 else ""
-
-        if not order_id:
-            continue
-
-        if order_id in cache:
-            shopify_order = cache[order_id]
-        else:
-            elapsed = time.time() - last_api_call
-            if elapsed < 1:
-                time.sleep(1 - elapsed)
-            try:
-                url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders.json?name={order_id}"
-                response = requests.get(url)
-                orders = response.json().get("orders", [])
-                if not orders:
-                    continue
-                shopify_order = orders[0]
-                cache[order_id] = shopify_order
-                last_api_call = time.time()
-            except Exception as e:
-                continue
-
-        shopify_status = ""
-        if shopify_order.get("cancelled_at"):
-            shopify_status = "CANCELLED"
-        elif shopify_order.get("fulfillment_status") == "fulfilled":
-            shopify_status = "FULFILLED"
-
-        if shopify_status and shopify_status != current_status:
-            update_range = f"Sheet1!L{idx}"
-            sheets_service.spreadsheets().values().update(
-                spreadsheetId=spreadsheet_id,
-                range=update_range,
-                valueInputOption="USER_ENTERED",
-                body={"values": [[shopify_status]]}
-            ).execute()
-            logging.info(f"✅ Updated {order_id} → {shopify_status}")
             
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(
@@ -353,11 +295,5 @@ async def webhook_orders_updated(
         logging.info(f"✅ Exported order {order_id}")
     except Exception as e:
         logging.error(f"❌ Error exporting order {order_id}: {e}")
-
-    # === SYNC OTHER UNMARKED FULFILLED ORDERS ===
-    for store in STORES:
-        if store["shop_domain"] == x_shopify_shop_domain:
-            sync_unfulfilled_rows(store)
-            logging.info(f"🔄 Finished syncing old orders for {store['name']}")
 
     return JSONResponse(content={"success": True})
