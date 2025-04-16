@@ -258,16 +258,22 @@ async def webhook_orders_updated(
         logging.error(f"❌ Failed to load existing orders: {e}")
         return JSONResponse(content={"error": "sheet read failed"})
 
-    # If order already exists in the sheet, skip it
     if order_id.strip() in existing_order_ids:
         logging.info(f"⚠️ Order {order_id} already exists in sheet — skipping")
         return JSONResponse(content={"skipped": True})
 
-    # Skip if fulfilled, cancelled, or closed
-    if order.get("fulfillment_status") == "fulfilled" or order.get("cancelled_at") or order.get("closed_at"):
-        logging.info(f"🚫 Order {order_id} is fulfilled/cancelled/closed — skipping")
+    # Validate fulfillment, cancellation, or closure status
+    fulfillment_status = (order.get("fulfillment_status") or "").strip().lower()
+    cancelled = order.get("cancelled_at")
+    closed = order.get("closed_at")
+
+    logging.info(f"🔍 Status check for {order_id} → Fulfillment: '{fulfillment_status}' | Cancelled: {cancelled} | Closed: {closed}")
+
+    if fulfillment_status == "fulfilled" or cancelled or closed:
+        logging.info(f"🚫 Skipping {order_id} — fulfilled, cancelled or closed")
         return JSONResponse(content={"skipped": True})
 
+    logging.info(f"✅ Order {order_id} passed all filters — exporting now...")
 
     # === EXPORT NEW ORDER ===
     try:
@@ -311,6 +317,9 @@ async def webhook_orders_updated(
             insertDataOption="INSERT_ROWS",
             body={"values": [row]}
         ).execute()
+
+        logging.info(f"✅ Exported order {order_id}")
+
 
         # === Force default (white) background for the newly inserted row ===
         try:
