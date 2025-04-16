@@ -305,6 +305,8 @@ async def webhook_orders_updated(
         shipping_address1 = shipping_address.get("address1", "")
         original_city = shipping_address.get("city", "")
         corrected_city, note = get_corrected_city(original_city, shipping_address1)
+        if isinstance(corrected_city, list):
+            corrected_city = str(corrected_city[0])  # Just take the first value
         total_price = order.get("total_outstanding") or order.get("presentment_total_price_set", {}).get("shop_money", {}).get("amount", "")
         notes = order.get("note", "")
         tags = order.get("tags", "")
