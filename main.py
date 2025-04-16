@@ -330,16 +330,38 @@ async def webhook_orders_updated(
         ]
         row = (row + [""] * 12)[:12]
 
-        sheets_service.spreadsheets().values().append(
+    # === Force default (white) background for the newly inserted row ===
+    try:
+        result = sheets_service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id,
-            range="Sheet1!A1",
-            valueInputOption="USER_ENTERED",
-            insertDataOption="INSERT_ROWS",
-            body={"values": [row]}
+            range="Sheet1!A:L"
         ).execute()
-        logging.info(f"✅ Exported order {order_id}")
+
+        new_row_index = len(result.get("values", []))  # Index of last row added
+
+        sheets_service.spreadsheets().batchUpdate(
+            spreadsheetId=spreadsheet_id,
+            body={
+                "requests": [
+                    {
+                        "updateCells": {
+                            "range": {
+                                "sheetId": 0,
+                                "startRowIndex": new_row_index - 1,
+                                "endRowIndex": new_row_index
+                            },
+                            "fields": "userEnteredFormat"
+                        }
+                    }
+                ]
+            }
+        ).execute()
     except Exception as e:
-        logging.error(f"❌ Error exporting order {order_id}: {e}")
+        logging.warning(f"⚠️ Failed to clear formatting for new row: {e}")
+
+    logging.info(f"✅ Exported order {order_id}")
+except Exception as e:
+    logging.error(f"❌ Error exporting order {order_id}: {e}")
 
     # === SYNC OTHER UNMARKED FULFILLED ORDERS ===
     for store in STORES:
