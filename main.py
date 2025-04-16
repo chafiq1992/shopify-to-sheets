@@ -134,37 +134,6 @@ def is_fulfilled(order_id, shop_domain, api_key, password):
         logging.error(f"⚠️ Failed to fetch order {order_id} from {shop_domain}: {e}")
         return False
 
-def apply_green_background(sheet_id, row_index):
-    body = {
-        "requests": [
-            {
-                "repeatCell": {
-                    "range": {
-                        "sheetId": 0,
-                        "startRowIndex": row_index - 1,
-                        "endRowIndex": row_index,
-                        "startColumnIndex": 0,
-                        "endColumnIndex": 12
-                    },
-                    "cell": {
-                        "userEnteredFormat": {
-                            "backgroundColor": {
-                                "red": 0.8,
-                                "green": 1.0,
-                                "blue": 0.8
-                            }
-                        }
-                    },
-                    "fields": "userEnteredFormat.backgroundColor"
-                }
-            }
-        ]
-    }
-    sheets_service.spreadsheets().batchUpdate(
-        spreadsheetId=sheet_id,
-        body=body
-    ).execute()
-
 def sync_unfulfilled_rows(store):
     logging.info(f"🔍 Syncing unfulfilled rows for store: {store['name']}")
     spreadsheet_id = store["spreadsheet_id"]
