@@ -258,7 +258,6 @@ async def webhook_orders_updated(
                         valueInputOption="USER_ENTERED",
                         body={"values": [[status]]}
                     ).execute()
-                    if status == "FULFILLED":
                     logging.info(f"🎨 Updated row {order_id} → {status}")
                 break
     except Exception as e:
