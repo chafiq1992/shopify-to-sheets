@@ -281,8 +281,6 @@ async def webhook_orders_updated(
                     status = "CANCELLED"
                 elif order.get("fulfillment_status") == "fulfilled":
                     status = "FULFILLED"
-                elif "ch" in current_tags:
-                    status = "CH"
                 if status:
                     update_range = f"Sheet1!L{idx}"
                     sheets_service.spreadsheets().values().update(
