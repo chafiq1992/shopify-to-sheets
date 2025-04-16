@@ -191,32 +191,7 @@ def sync_unfulfilled_rows(store):
                 body={"values": [[shopify_status]]}
             ).execute()
             logging.info(f"✅ Updated {order_id} → {shopify_status}")
-
-    # Sort rows by status: FULFILLED first, then unfulfilled
-    sorted_rows = [rows[0]]  # Header
-    fulfilled = []
-    unfulfilled = []
-    for row in rows[1:]:
-        status = row[11].strip().upper() if len(row) > 11 else ""
-        (fulfilled if status in ["FULFILLED", "CANCELLED"] else unfulfilled).append(row)
-
-    sorted_rows += fulfilled + unfulfilled
-
-    # Replace whole sheet
-    sheets_service.spreadsheets().values().clear(
-        spreadsheetId=spreadsheet_id,
-        range="Sheet1"
-    ).execute()
-
-    sheets_service.spreadsheets().values().update(
-        spreadsheetId=spreadsheet_id,
-        range="Sheet1!A1",
-        valueInputOption="USER_ENTERED",
-        body={"values": sorted_rows}
-    ).execute()
-
-    logging.info(f"✅ Reordered {len(fulfilled)} fulfilled and {len(unfulfilled)} unfulfilled orders")
-
+            
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(
     request: Request,
