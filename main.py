@@ -98,6 +98,16 @@ def verify_shopify_webhook(data, hmac_header):
     computed_hmac = base64.b64encode(digest).decode()
     return hmac.compare_digest(computed_hmac, hmac_header)
 
+def format_price(price):
+    """
+    Converts string price like '199.99' or 199.0 to a string integer '199'
+    """
+    try:
+        price_float = float(price)
+        return str(int(price_float))
+    except Exception:
+        return str(price)  # fallback
+
 def format_phone(phone: str) -> str:
     if not phone:
         return ""
@@ -228,7 +238,8 @@ async def webhook_orders_updated(
         corrected_city, note = get_corrected_city(original_city, shipping_address1)
         if isinstance(corrected_city, list):
             corrected_city = str(corrected_city[0])  # Just take the first value
-        total_price = order.get("total_outstanding") or order.get("presentment_total_price_set", {}).get("shop_money", {}).get("amount", "")
+        raw_price = order.get("total_outstanding") or order.get("presentment_total_price_set", {}).get("shop_money", {}).get("amount", "")
+        total_price = format_price(raw_price)
         notes = order.get("note", "")
         tags = order.get("tags", "")
         line_items = ", ".join([
