@@ -281,13 +281,6 @@ async def webhook_orders_updated(
 
         # === Append the row ===
         safe_append_row(sheets_service, spreadsheet_id, row)
-            spreadsheetId=spreadsheet_id,
-            range="Sheet1!A1",
-            valueInputOption="USER_ENTERED",
-            insertDataOption="INSERT_ROWS",
-            body={"values": [row]}
-        ).execute()
-
         logging.info(f"✅ Exported order {order_id}")
 
 
