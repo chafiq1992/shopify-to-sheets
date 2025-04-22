@@ -13,7 +13,6 @@ from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import JSONResponse
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-import googleapiclient.errors
 
 # === CONFIG ===
 TRIGGER_TAG = "pc"
@@ -144,22 +143,6 @@ def is_fulfilled(order_id, shop_domain, api_key, password):
     except Exception as e:
         logging.error(f"⚠️ Failed to fetch order {order_id} from {shop_domain}: {e}")
         return False
-
-def safe_append_row(service, spreadsheet_id, row, retries=3, delay=2):
-    for attempt in range(retries):
-        try:
-            return service.spreadsheets().values().append(
-                spreadsheetId=spreadsheet_id,
-                range="Sheet1!A1",
-                valueInputOption="USER_ENTERED",
-                insertDataOption="INSERT_ROWS",
-                body={"values": [row]}
-            ).execute()
-        except HttpError as e:
-            if attempt < retries - 1:
-                time.sleep(delay * (2 ** attempt))
-            else:
-                raise e
             
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(
@@ -280,7 +263,14 @@ async def webhook_orders_updated(
         row = (row + [""] * 12)[:12]
 
         # === Append the row ===
-        safe_append_row(sheets_service, spreadsheet_id, row)
+        sheets_service.spreadsheets().values().append(
+            spreadsheetId=spreadsheet_id,
+            range="Sheet1!A1",
+            valueInputOption="USER_ENTERED",
+            insertDataOption="INSERT_ROWS",
+            body={"values": [row]}
+        ).execute()
+
         logging.info(f"✅ Exported order {order_id}")
 
 
