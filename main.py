@@ -11,6 +11,10 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import certifi
 import sqlite3
+import urllib3
+
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # === CONFIG ===
 TRIGGER_TAG = "pc"
@@ -97,17 +101,21 @@ def format_phone(phone: str) -> str:
 def add_tag_to_order(order_id, store):
     try:
         url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders/{order_id}.json"
-        response = requests.get(url, verify=False)
+        response = requests.get(url, verify=False)  # ⚠️ Temporary verify=False for now
 
         if response.status_code != 200:
             logging.error(f"❌ Failed to fetch order {order_id}: {response.status_code} - {response.text}")
             return
 
-        order_data = response.json()
-        order = order_data.get("order")
+        try:
+            order_data = response.json()
+        except Exception as e:
+            logging.error(f"❌ Failed to decode JSON for order {order_id}: {e}")
+            return
 
+        order = order_data.get("order")
         if not order:
-            logging.error(f"❌ Order {order_id} not found")
+            logging.error(f"❌ No order found in Shopify response for {order_id}")
             return
 
         current_tags = order.get("tags", "")
@@ -134,6 +142,7 @@ def add_tag_to_order(order_id, store):
 
     except Exception as e:
         logging.error(f"❌ Exception while tagging order {order_id}: {e}")
+
 
 
 @app.post("/webhook/orders-updated")
