@@ -98,7 +98,7 @@ def add_tag_to_order(order_id, store):
     try:
         # 🛠 Correct URL directly by ID
         url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders/{order_id}.json"
-        response = requests.get(url, verify=certifi.where())
+        response = requests.get(url, verify=False)
         order = response.json().get("order")
 
         if not order:
@@ -118,7 +118,7 @@ def add_tag_to_order(order_id, store):
                     "tags": ", ".join(tag_list)
                 }
             }
-            update_response = requests.put(update_url, json=payload, verify=certifi.where())
+            update_response = requests.put(update_url, json=payload, verify=False)
 
             if update_response.status_code == 200:
                 logging.info(f"✅ Added tag '1' to order {order_id}")
