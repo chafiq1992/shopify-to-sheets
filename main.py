@@ -9,6 +9,7 @@ import logging
 import requests
 import time
 from datetime import datetime
+from threading import Lock
 from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import JSONResponse
 from google.oauth2 import service_account
@@ -47,7 +48,7 @@ CITY_LIST_PATH = "cities_bigdelivery.txt"
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(message)s",
-    force=True  # ensures log output shows on Render
+    force=True
 )
 
 # === LOAD CITY ALIASES AND LIST ===
@@ -88,6 +89,38 @@ sheets_service = build("sheets", "v4", credentials=credentials)
 # === FASTAPI APP ===
 app = FastAPI()
 
+# === ORDERS CACHE (for 2 minutes) ===
+orders_cache = {}
+orders_cache_lock = Lock()
+last_fetch_time = {}
+CACHE_TTL_SECONDS = 120  # 2 minutes
+
+def get_cached_existing_orders(spreadsheet_id):
+    now = time.time()
+    with orders_cache_lock:
+        if (
+            spreadsheet_id in orders_cache and
+            spreadsheet_id in last_fetch_time and
+            now - last_fetch_time[spreadsheet_id] < CACHE_TTL_SECONDS
+        ):
+            return orders_cache[spreadsheet_id]
+        try:
+            result = sheets_service.spreadsheets().values().get(
+                spreadsheetId=spreadsheet_id,
+                range="Sheet1!A:L"
+            ).execute()
+            rows = result.get("values", [])
+            existing_order_ids = set()
+            for row in rows[1:]:  # Skip header
+                if len(row) > 1:
+                    existing_order_ids.add(row[1].strip())
+            orders_cache[spreadsheet_id] = existing_order_ids
+            last_fetch_time[spreadsheet_id] = now
+            return existing_order_ids
+        except Exception as e:
+            logging.error(f"❌ Failed to refresh existing orders cache: {e}")
+            return set()
+
 # === HELPERS ===
 def verify_shopify_webhook(data, hmac_header):
     digest = hmac.new(
@@ -99,14 +132,11 @@ def verify_shopify_webhook(data, hmac_header):
     return hmac.compare_digest(computed_hmac, hmac_header)
 
 def format_price(price):
-    """
-    Converts string price like '199.99' or 199.0 to a string integer '199'
-    """
     try:
         price_float = float(price)
         return str(int(price_float))
     except Exception:
-        return str(price)  # fallback
+        return str(price)
 
 def format_phone(phone: str) -> str:
     if not phone:
@@ -134,16 +164,7 @@ def get_corrected_city(input_city, address_hint=""):
             return city.title(), f"✅ Guessed from address: '{input_city}' → '{city.title()}'"
     return input_city, f"🛑 Could not match: '{input_city}'"
 
-def is_fulfilled(order_id, shop_domain, api_key, password):
-    try:
-        url = f"https://{api_key}:{password}@{shop_domain}/admin/api/2023-04/orders.json?name={order_id}"
-        response = requests.get(url)
-        orders = response.json().get("orders", [])
-        return orders and orders[0].get("fulfillment_status") == "fulfilled"
-    except Exception as e:
-        logging.error(f"⚠️ Failed to fetch order {order_id} from {shop_domain}: {e}")
-        return False
-            
+# === WEBHOOK HANDLER ===
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(
     request: Request,
@@ -155,8 +176,12 @@ async def webhook_orders_updated(
 
     spreadsheet_id = SHOP_DOMAIN_TO_SHEET[x_shopify_shop_domain]
     body = await request.body()
-    order = json.loads(body)
 
+    # ✅ Verify Shopify HMAC
+    if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
+        raise HTTPException(status_code=403, detail="Invalid HMAC verification")
+
+    order = json.loads(body)
     order_id = order.get("name", "").strip()
     logging.info(f"🔔 Webhook received for order: {order_id}")
 
@@ -170,7 +195,7 @@ async def webhook_orders_updated(
             range="Sheet1!A:K"
         ).execute()
         rows = result.get("values", [])
-        for idx, row in enumerate(rows[1:], start=2):  # Start from row 2
+        for idx, row in enumerate(rows[1:], start=2):
             if len(row) > 1 and row[1] == order_id:
                 status = ""
                 if order.get("cancelled_at"):
@@ -190,31 +215,18 @@ async def webhook_orders_updated(
     except Exception as e:
         logging.error(f"❌ Failed to mark status for {order_id}: {e}")
 
-    # === EXPORT ONLY IF: Has 'pc' tag + not fulfilled/cancelled + not already in sheet ===
+    # === EXPORT ONLY IF: Has 'pc' tag + not fulfilled/cancelled/closed ===
     if TRIGGER_TAG not in current_tags:
         logging.info(f"🚫 Skipping {order_id} — no '{TRIGGER_TAG}' tag")
         return JSONResponse(content={"skipped": True})
 
-    # Check current sheet to avoid duplicate export
-    try:
-        result = sheets_service.spreadsheets().values().get(
-            spreadsheetId=spreadsheet_id,
-            range="Sheet1!A:L"
-        ).execute()
-        rows = result.get("values", [])
-        existing_order_ids = set()
-        for row in rows[1:]:  # Skip header
-            if len(row) > 1:
-                existing_order_ids.add(row[1].strip())
-    except Exception as e:
-        logging.error(f"❌ Failed to load existing orders: {e}")
-        return JSONResponse(content={"error": "sheet read failed"})
+    # ✅ Use cached existing orders
+    existing_order_ids = get_cached_existing_orders(spreadsheet_id)
 
-    if order_id.strip() in existing_order_ids:
+    if order_id in existing_order_ids:
         logging.info(f"⚠️ Order {order_id} already exists in sheet — skipping")
         return JSONResponse(content={"skipped": True})
 
-    # Validate fulfillment, cancellation, or closure status
     fulfillment_status = (order.get("fulfillment_status") or "").strip().lower()
     cancelled = order.get("cancelled_at")
     closed = order.get("closed_at")
@@ -225,8 +237,6 @@ async def webhook_orders_updated(
         logging.info(f"🚫 Skipping {order_id} — fulfilled, cancelled or closed")
         return JSONResponse(content={"skipped": True})
 
-    logging.info(f"✅ Order {order_id} passed all filters — exporting now...")
-
     # === EXPORT NEW ORDER ===
     try:
         created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
@@ -236,8 +246,7 @@ async def webhook_orders_updated(
         shipping_address1 = shipping_address.get("address1", "")
         original_city = shipping_address.get("city", "")
         corrected_city, note = get_corrected_city(original_city, shipping_address1)
-        if isinstance(corrected_city, list):
-            corrected_city = str(corrected_city[0])  # Just take the first value
+
         raw_price = order.get("total_outstanding") or order.get("presentment_total_price_set", {}).get("shop_money", {}).get("amount", "")
         total_price = format_price(raw_price)
         notes = order.get("note", "")
@@ -262,7 +271,6 @@ async def webhook_orders_updated(
         ]
         row = (row + [""] * 12)[:12]
 
-        # === Append the row ===
         sheets_service.spreadsheets().values().append(
             spreadsheetId=spreadsheet_id,
             range="Sheet1!A1",
@@ -273,37 +281,6 @@ async def webhook_orders_updated(
 
         logging.info(f"✅ Exported order {order_id}")
 
-
-        # === Force default (white) background for the newly inserted row ===
-        try:
-            result = sheets_service.spreadsheets().values().get(
-                spreadsheetId=spreadsheet_id,
-                range="Sheet1!A:L"
-            ).execute()
-
-            new_row_index = len(result.get("values", []))  # Index of last row added
-
-            sheets_service.spreadsheets().batchUpdate(
-                spreadsheetId=spreadsheet_id,
-                body={
-                    "requests": [
-                        {
-                            "updateCells": {
-                                "range": {
-                                    "sheetId": 0,
-                                    "startRowIndex": new_row_index - 1,
-                                    "endRowIndex": new_row_index
-                                },
-                                "fields": "userEnteredFormat"
-                            }
-                        }
-                    ]
-                }
-            ).execute()
-        except Exception as e:
-            logging.warning(f"⚠️ Failed to clear formatting for new row: {e}")
-
-        logging.info(f"✅ Exported order {order_id}")
     except Exception as e:
         logging.error(f"❌ Error exporting order {order_id}: {e}")
 
