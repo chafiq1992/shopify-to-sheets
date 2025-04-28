@@ -19,9 +19,9 @@ from googleapiclient.discovery import build
 TRIGGER_TAG = "pc"
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
 
-SHOP_DOMAIN_TO_SHEET = {
-    "fdd92b-2e.myshopify.com": os.getenv("SHEET_IRRANOVA_ID"),
-    "nouralibas.myshopify.com": os.getenv("SHEET_IRRAKIDS_ID")
+SHOPIFY_WEBHOOK_SECRETS = {
+    "fdd92b-2e.myshopify.com": os.getenv("SHOPIFY_WEBHOOK_SECRET_IRRANOVA", ""),
+    "nouralibas.myshopify.com": os.getenv("SHOPIFY_WEBHOOK_SECRET_IRRAKIDS", "")
 }
 
 STORES = [
@@ -122,9 +122,9 @@ def get_cached_existing_orders(spreadsheet_id):
             return set()
 
 # === HELPERS ===
-def verify_shopify_webhook(data, hmac_header):
+def verify_shopify_webhook(data, hmac_header, secret):
     digest = hmac.new(
-        SHOPIFY_WEBHOOK_SECRET.encode("utf-8"),
+        secret.encode("utf-8"),
         data,
         hashlib.sha256
     ).digest()
@@ -187,8 +187,13 @@ async def webhook_orders_updated(
     spreadsheet_id = SHOP_DOMAIN_TO_SHEET[x_shopify_shop_domain]
     body = await request.body()
 
+    # Get correct webhook secret depending on the shop domain
+    webhook_secret = SHOPIFY_WEBHOOK_SECRETS.get(x_shopify_shop_domain, "")
+    if not webhook_secret:
+        raise HTTPException(status_code=400, detail="Webhook secret not configured for this shop domain")
+
     # ✅ Verify Shopify HMAC
-    if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
+    if not verify_shopify_webhook(body, x_shopify_hmac_sha256, webhook_secret):
         raise HTTPException(status_code=403, detail="Invalid HMAC verification")
 
     order = json.loads(body)
