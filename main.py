@@ -19,6 +19,10 @@ from googleapiclient.discovery import build
 TRIGGER_TAG = "pc"
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
 
+SHOP_DOMAIN_TO_SHEET = {
+    "fdd92b-2e.myshopify.com": os.getenv("SHEET_IRRANOVA_ID"),
+    "nouralibas.myshopify.com": os.getenv("SHEET_IRRAKIDS_ID")
+
 SHOPIFY_WEBHOOK_SECRETS = {
     "fdd92b-2e.myshopify.com": os.getenv("SHOPIFY_WEBHOOK_SECRET_IRRANOVA", ""),
     "nouralibas.myshopify.com": os.getenv("SHOPIFY_WEBHOOK_SECRET_IRRAKIDS", "")
