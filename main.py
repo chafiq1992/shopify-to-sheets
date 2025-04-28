@@ -99,6 +99,7 @@ def format_phone(phone: str) -> str:
         return cleaned
     return cleaned
 
+
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(request: Request):
     body = await request.body()
@@ -189,4 +190,3 @@ async def webhook_orders_updated(request: Request):
         logging.info(f"🚫 Order {order_name} skipped — conditions not met (either tag 'pc' missing or tag '1' already exists).")
 
     return JSONResponse(content={"success": True})
-
