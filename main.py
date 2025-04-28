@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request, Header, HTTPException
 from fastapi.responses import JSONResponse
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+import certifi
 
 # === CONFIG ===
 TRIGGER_TAG = "pc"
@@ -68,7 +69,7 @@ def format_phone(phone: str) -> str:
 def add_tag_to_order(order_id, store):
     try:
         url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders.json?name={order_id}"
-        response = requests.get(url)
+        response = requests.get(url, verify=certifi.where())  # << SSL fix here ✅
         orders = response.json().get("orders", [])
         if not orders:
             logging.error(f"❌ Order {order_id} not found")
@@ -87,7 +88,7 @@ def add_tag_to_order(order_id, store):
                     "tags": ", ".join(tag_list)
                 }
             }
-            update_response = requests.put(update_url, json=payload)
+            update_response = requests.put(update_url, json=payload, verify=certifi.where())  # << SSL fix here ✅
 
             if update_response.status_code == 200:
                 logging.info(f"✅ Only added tag '1' to order {order_id}")
@@ -98,7 +99,7 @@ def add_tag_to_order(order_id, store):
 
     except Exception as e:
         logging.error(f"❌ Exception while tagging order {order_id}: {e}")
-
+        
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(request: Request):
     body = await request.body()
