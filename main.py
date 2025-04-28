@@ -146,8 +146,11 @@ def add_tag_to_order(order_id, store):
 async def webhook_orders_updated(request: Request):
     body = await request.body()
     order = json.loads(body)
-    order_id = str(order.get("id", "")).strip()
-    logging.info(f"🔔 Webhook received for order: {order_id}")
+
+    order_name = str(order.get("name", "")).strip()  # ➔ For Google Sheet
+    order_id = str(order.get("id", "")).strip()       # ➔ For Shopify tagging
+
+    logging.info(f"🔔 Webhook received for order: {order_name} (ID: {order_id})")
 
     fulfillment_status = (order.get("fulfillment_status") or "").lower()
     cancelled = order.get("cancelled_at")
@@ -164,10 +167,9 @@ async def webhook_orders_updated(request: Request):
         TRIGGER_TAG in tags and
         EXTRACTED_TAG not in tags
     ):
-        logging.info(f"✅ Order {order_id} passed filters — exporting and tagging...")
+        logging.info(f"✅ Order {order_name} passed filters — exporting and tagging...")
 
         try:
-            # Extract order fields
             spreadsheet_id = SHOP_DOMAIN_TO_SHEET["fdd92b-2e.myshopify.com"]
 
             created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
@@ -186,7 +188,7 @@ async def webhook_orders_updated(request: Request):
             # Save to Google Sheets
             row = [
                 created_at,
-                order_id,
+                order_name,   # ✅ Use the nice display number (e.g., '#32467')
                 shipping_name,
                 shipping_phone,
                 shipping_address1,
@@ -204,7 +206,7 @@ async def webhook_orders_updated(request: Request):
                 body={"values": [row]}
             ).execute()
 
-            # Save to SQLite
+            # Save to SQLite database
             conn = sqlite3.connect(DB_FILE)
             cursor = conn.cursor()
             cursor.execute('''
@@ -212,19 +214,19 @@ async def webhook_orders_updated(request: Request):
                     created_at, order_id, shipping_name, shipping_phone,
                     shipping_address1, total_price, city, line_items
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (created_at, order_id, shipping_name, shipping_phone, shipping_address1, total_price, city, line_items))
+            ''', (created_at, order_name, shipping_name, shipping_phone, shipping_address1, total_price, city, line_items))
             conn.commit()
             conn.close()
-            logging.info(f"✅ Order {order_id} saved to database")
+            logging.info(f"✅ Order {order_name} saved to database")
 
-            # Tag order
+            # Tag order in Shopify (must use real ID!)
             store = STORES[0]
             add_tag_to_order(order_id, store)
 
         except Exception as e:
-            logging.error(f"❌ Failed to export order {order_id}: {e}")
+            logging.error(f"❌ Failed to export order {order_name}: {e}")
 
     else:
-        logging.info(f"🚫 Order {order_id} skipped — conditions not met")
+        logging.info(f"🚫 Order {order_name} skipped — conditions not met")
 
     return JSONResponse(content={"success": True})
