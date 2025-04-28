@@ -100,6 +100,41 @@ def format_phone(phone: str) -> str:
     return cleaned
 
 
+def add_tag_to_order(order_id: str, store: dict):
+    """Adds the EXTRACTED_TAG to the Shopify order."""
+    try:
+        url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-07/orders/{order_id}.json"
+
+        # Fetch the current tags
+        response = requests.get(url, verify=False)
+        response.raise_for_status()
+        current_order = response.json().get("order", {})
+        existing_tags = current_order.get("tags", "")
+
+        # Append '1' to existing tags
+        tags = [t.strip() for t in existing_tags.split(",") if t.strip()]
+        if EXTRACTED_TAG not in tags:
+            tags.append(EXTRACTED_TAG)
+        updated_tags = ", ".join(tags)
+
+        # Update the order with new tags
+        update_url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-07/orders/{order_id}.json"
+        payload = {
+            "order": {
+                "id": order_id,
+                "tags": updated_tags
+            }
+        }
+        update_response = requests.put(update_url, json=payload, verify=False)
+        update_response.raise_for_status()
+
+        logging.info(f"🏷️ Successfully added tag '1' to order {order_id}")
+
+    except Exception as e:
+        logging.error(f"❌ Failed to tag order {order_id}: {e}")
+
+
+
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(request: Request):
     body = await request.body()
