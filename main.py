@@ -96,10 +96,15 @@ def format_phone(phone: str) -> str:
 
 def add_tag_to_order(order_id, store):
     try:
-        # 🛠 Correct URL directly by ID
         url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders/{order_id}.json"
         response = requests.get(url, verify=False)
-        order = response.json().get("order")
+
+        if response.status_code != 200:
+            logging.error(f"❌ Failed to fetch order {order_id}: {response.status_code} - {response.text}")
+            return
+
+        order_data = response.json()
+        order = order_data.get("order")
 
         if not order:
             logging.error(f"❌ Order {order_id} not found")
@@ -123,7 +128,7 @@ def add_tag_to_order(order_id, store):
             if update_response.status_code == 200:
                 logging.info(f"✅ Added tag '1' to order {order_id}")
             else:
-                logging.error(f"❌ Failed to add tag to {order_id}: {update_response.text}")
+                logging.error(f"❌ Failed to update tag for {order_id}: {update_response.status_code} - {update_response.text}")
         else:
             logging.info(f"ℹ️ Tag '1' already exists for order {order_id}, no update needed.")
 
