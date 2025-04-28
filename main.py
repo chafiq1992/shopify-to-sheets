@@ -144,20 +144,14 @@ def add_tag_to_order(order_id, store):
 
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(request: Request):
-    try:
-        body = await request.body()
-        order = json.loads(body)
-    except Exception as e:
-        logging.error(f"❌ Failed to decode webhook payload: {e}")
-        return JSONResponse(content={"success": False})
+    body = await request.body()
+    order = json.loads(body)
 
-    # Separate: display nice 'name' for sheet, real 'id' for Shopify
-    order_name = str(order.get("name", "")).strip()  # e.g., #32467
-    order_id = str(order.get("id", "")).strip()       # e.g., 6403707011361
+    order_name = str(order.get("name", "")).strip()  # For display in Google Sheets
+    order_id = str(order.get("id", "")).strip()  # For Shopify tagging
 
     logging.info(f"🔔 Webhook received for order: {order_name} (ID: {order_id})")
 
-    # Extract order details safely
     fulfillment_status = (order.get("fulfillment_status") or "").lower()
     cancelled = order.get("cancelled_at")
     closed = order.get("closed_at")
@@ -165,12 +159,11 @@ async def webhook_orders_updated(request: Request):
     tags_str = order.get("tags", "")
     tags = [t.strip().lower() for t in tags_str.split(",")]
 
-    # SKIP orders if they already have '1' tag (EXTRACTED_TAG)
+    # Skip if 'EXTRACTED_TAG' (tag "1") is already present
     if EXTRACTED_TAG.lower() in tags:
         logging.info(f"🚫 Order {order_name} already has tag '{EXTRACTED_TAG}', skipping export.")
         return JSONResponse(content={"success": True})
 
-    # Normal filter conditions
     if (
         fulfillment_status != "fulfilled" and
         not cancelled and
@@ -181,31 +174,23 @@ async def webhook_orders_updated(request: Request):
         logging.info(f"✅ Order {order_name} passed filters — exporting and tagging...")
 
         try:
+            # Extract order fields for Google Sheets and SQLite database
             spreadsheet_id = SHOP_DOMAIN_TO_SHEET["fdd92b-2e.myshopify.com"]
 
-            created_at = datetime.strptime(
-                order["created_at"], '%Y-%m-%dT%H:%M:%S%z'
-            ).strftime('%Y-%m-%d %H:%M')
-
+            created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
             shipping_address = order.get("shipping_address", {})
             shipping_name = shipping_address.get("name", "")
             shipping_phone = format_phone(shipping_address.get("phone", ""))
             shipping_address1 = shipping_address.get("address1", "")
             city = shipping_address.get("city", "")
-
-            raw_price = order.get("total_outstanding") or \
-                        order.get("presentment_total_price_set", {}).get("shop_money", {}).get("amount", "")
+            raw_price = order.get("total_outstanding") or order.get("presentment_total_price_set", {}).get("shop_money", {}).get("amount", "")
             total_price = format_price(raw_price)
+            line_items = ", ".join([f"{item['quantity']}x {item.get('variant_title', item['title'])}" for item in order.get("line_items", [])])
 
-            line_items = ", ".join([
-                f"{item['quantity']}x {item.get('variant_title', item['title'])}"
-                for item in order.get("line_items", [])
-            ])
-
-            # ➔ Save to Google Sheets
+            # Save to Google Sheets
             row = [
                 created_at,
-                order_name,  # ✅ Use the human-readable #number
+                order_name,  # Display order number (#32467)
                 shipping_name,
                 shipping_phone,
                 shipping_address1,
@@ -223,7 +208,7 @@ async def webhook_orders_updated(request: Request):
                 body={"values": [row]}
             ).execute()
 
-            # ➔ Save to SQLite
+            # Save to SQLite database
             conn = sqlite3.connect(DB_FILE)
             cursor = conn.cursor()
             cursor.execute('''
@@ -236,7 +221,7 @@ async def webhook_orders_updated(request: Request):
             conn.close()
             logging.info(f"✅ Order {order_name} saved to database")
 
-            # ➔ Tag order in Shopify
+            # Tag order in Shopify (must use real Shopify ID)
             store = STORES[0]
             add_tag_to_order(order_id, store)
 
