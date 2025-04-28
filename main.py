@@ -104,69 +104,6 @@ async def webhook_orders_updated(request: Request):
     body = await request.body()
     order = json.loads(body)
 
-    order_name = str(order.get("name", "")).strip()
-    order_id = str(order.get("id", "")).strip()
-
-    logging.info(f"🔔 Webhook received for order: {order_name} (ID: {order_id})")
-
-    tags_str = order.get("tags", "")
-    tags = [t.strip().lower() for t in tags_str.split(",")]
-
-    if EXTRACTED_TAG in tags:
-        logging.info(f"ℹ️ Order {order_name} already has tag '1'. Skipping...")
-        return JSONResponse(content={"success": True})
-
-    fulfillment_status = (order.get("fulfillment_status") or "").lower()
-    cancelled = order.get("cancelled_at")
-    closed = order.get("closed_at")
-    financial_status = (order.get("financial_status") or "").lower()
-
-    if (
-        fulfillment_status != "fulfilled" and
-        not cancelled and
-        not closed and
-        financial_status in ["paid", "pending", "unpaid"] and
-        TRIGGER_TAG in tags
-    ):
-        try:
-            created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
-            shipping_address = order.get("shipping_address", {})
-            shipping_name = shipping_address.get("name", "")
-            shipping_phone = format_phone(shipping_address.get("phone", ""))
-            shipping_address1 = shipping_address.get("address1", "")
-            city = shipping_address.get("city", "")
-            raw_price = order.get("total_outstanding") or order.get("presentment_total_price_set", {}).get("shop_money", {}).get("amount", "")
-            total_price = format_price(raw_price)
-            line_items = ", ".join([f"{item['quantity']}x {item.get('variant_title', item['title'])}" for item in order.get("line_items", [])])
-
-            # Save to database ONLY
-            conn = sqlite3.connect(DB_FILE)
-            cursor = conn.cursor()
-            cursor.execute('''
-                INSERT OR IGNORE INTO orders (
-                    created_at, order_id, shipping_name, shipping_phone,
-                    shipping_address1, total_price, city, line_items, exported
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
-            ''', (created_at, order_name, shipping_name, shipping_phone, shipping_address1, total_price, city, line_items))
-            conn.commit()
-            conn.close()
-
-            logging.info(f"✅ Order {order_name} saved to database")
-
-        except Exception as e:
-            logging.error(f"❌ Failed to save order {order_name}: {e}")
-
-    else:
-        logging.info(f"🚫 Order {order_name} skipped — conditions not met")
-
-    return JSONResponse(content={"success": True})
-
-
-@app.post("/webhook/orders-updated")
-async def webhook_orders_updated(request: Request):
-    body = await request.body()
-    order = json.loads(body)
-
     order_name = str(order.get("name", "")).strip()  # For Google Sheet
     order_id = str(order.get("id", "")).strip()       # For Shopify tagging
 
