@@ -155,23 +155,34 @@ async def webhook_orders_updated(
 
     spreadsheet_id = SHOP_DOMAIN_TO_SHEET[x_shopify_shop_domain]
     body = await request.body()
+    
+    # ✅ Verify Shopify HMAC before parsing JSON (optional security improvement)
+    if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
+        raise HTTPException(status_code=401, detail="Invalid HMAC signature")
+    
     order = json.loads(body)
 
-    order_id = order.get("name", "").strip()
+    order_id = str(order.get("name", "")).strip()
     logging.info(f"🔔 Webhook received for order: {order_id}")
 
     tags_str = order.get("tags", "")
     current_tags = [t.strip().lower() for t in tags_str.split(",")]
 
-    # === MARK EXISTING ROWS BASED ON STATUS OR TAG "ch" ===
+    # === Load sheet ONCE at the beginning (A:L) ===
     try:
         result = sheets_service.spreadsheets().values().get(
             spreadsheetId=spreadsheet_id,
-            range="Sheet1!A:K"
+            range="Sheet1!A:L"
         ).execute()
         rows = result.get("values", [])
-        for idx, row in enumerate(rows[1:], start=2):  # Start from row 2
-            if len(row) > 1 and row[1] == order_id:
+    except Exception as e:
+        logging.error(f"❌ Failed to load sheet data: {e}")
+        return JSONResponse(content={"error": "sheet read failed"})
+
+    # === 1. Try to mark existing row if order already exists ===
+    try:
+        for idx, row in enumerate(rows[1:], start=2):  # Skip header
+            if len(row) > 1 and row[1].strip() == order_id:
                 status = ""
                 if order.get("cancelled_at"):
                     status = "CANCELLED"
@@ -190,29 +201,17 @@ async def webhook_orders_updated(
     except Exception as e:
         logging.error(f"❌ Failed to mark status for {order_id}: {e}")
 
-    # === EXPORT ONLY IF: Has 'pc' tag + not fulfilled/cancelled + not already in sheet ===
+    # === 2. Check if order should be exported ===
     if TRIGGER_TAG not in current_tags:
         logging.info(f"🚫 Skipping {order_id} — no '{TRIGGER_TAG}' tag")
         return JSONResponse(content={"skipped": True})
 
-    # Check current sheet to avoid duplicate export
-    try:
-        result = sheets_service.spreadsheets().values().get(
-            spreadsheetId=spreadsheet_id,
-            range="Sheet1!A:L"
-        ).execute()
-        rows = result.get("values", [])
-        existing_order_ids = set()
-        for row in rows[1:]:  # Skip header
-            if len(row) > 1:
-                existing_order_ids.add(row[1].strip())
-    except Exception as e:
-        logging.error(f"❌ Failed to load existing orders: {e}")
-        return JSONResponse(content={"error": "sheet read failed"})
+    existing_order_ids = {row[1].strip() for row in rows[1:] if len(row) > 1}
 
-    if order_id.strip() in existing_order_ids:
+    if order_id in existing_order_ids:
         logging.info(f"⚠️ Order {order_id} already exists in sheet — skipping")
         return JSONResponse(content={"skipped": True})
+
 
     # Validate fulfillment, cancellation, or closure status
     fulfillment_status = (order.get("fulfillment_status") or "").strip().lower()
