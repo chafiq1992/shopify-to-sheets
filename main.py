@@ -71,7 +71,8 @@ def init_db():
             shipping_address1 TEXT,
             total_price TEXT,
             city TEXT,
-            line_items TEXT
+            line_items TEXT,
+            exported INTEGER DEFAULT 0  -- new field to track if sent to Sheet
         )
     ''')
     conn.commit()
@@ -98,65 +99,19 @@ def format_phone(phone: str) -> str:
         return cleaned
     return cleaned
 
-def add_tag_to_order(order_id, store):
-    try:
-        url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders/{order_id}.json"
-        response = requests.get(url, verify=False)
-        
-        if response.status_code != 200:
-            logging.error(f"❌ Failed to fetch order {order_id}: {response.text}")
-            return
-        
-        order = response.json().get("order")
-
-        if not order:
-            logging.error(f"❌ Order {order_id} not found")
-            return
-
-        current_tags = order.get("tags", "")
-        tag_list = [tag.strip() for tag in current_tags.split(",") if tag.strip()]
-
-        if EXTRACTED_TAG not in tag_list:
-            tag_list.append(EXTRACTED_TAG)
-
-            update_url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders/{order_id}.json"
-            payload = {
-                "order": {
-                    "id": order["id"],
-                    "tags": ", ".join(tag_list)
-                }
-            }
-            update_response = requests.put(update_url, json=payload, verify=False)
-
-            logging.info(f"📦 Shopify PUT status: {update_response.status_code}")
-            logging.info(f"📦 Shopify PUT response: {update_response.text}")
-
-            if update_response.status_code == 200:
-                logging.info(f"✅ Added tag '1' to order {order_id}")
-            else:
-                logging.error(f"❌ Failed to add tag to {order_id}: {update_response.text}")
-        else:
-            logging.info(f"ℹ️ Tag '1' already exists for order {order_id}, no update needed.")
-
-    except Exception as e:
-        logging.error(f"❌ Exception while tagging order {order_id}: {e}")
-
-
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(request: Request):
     body = await request.body()
     order = json.loads(body)
 
-    order_name = str(order.get("name", "")).strip()  # ➔ For Google Sheet
-    order_id = str(order.get("id", "")).strip()       # ➔ For Shopify tagging
+    order_name = str(order.get("name", "")).strip()
+    order_id = str(order.get("id", "")).strip()
 
     logging.info(f"🔔 Webhook received for order: {order_name} (ID: {order_id})")
 
-    # Extract tags and other order details
     tags_str = order.get("tags", "")
     tags = [t.strip().lower() for t in tags_str.split(",")]
 
-    # If the order already has the '1' tag, skip it.
     if EXTRACTED_TAG in tags:
         logging.info(f"ℹ️ Order {order_name} already has tag '1'. Skipping...")
         return JSONResponse(content={"success": True})
@@ -171,15 +126,9 @@ async def webhook_orders_updated(request: Request):
         not cancelled and
         not closed and
         financial_status in ["paid", "pending", "unpaid"] and
-        TRIGGER_TAG in tags and
-        EXTRACTED_TAG not in tags
+        TRIGGER_TAG in tags
     ):
-        logging.info(f"✅ Order {order_name} passed filters — exporting and tagging...")
-
         try:
-            # Extract order fields
-            spreadsheet_id = SHOP_DOMAIN_TO_SHEET["fdd92b-2e.myshopify.com"]
-
             created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
             shipping_address = order.get("shipping_address", {})
             shipping_name = shipping_address.get("name", "")
@@ -190,10 +139,49 @@ async def webhook_orders_updated(request: Request):
             total_price = format_price(raw_price)
             line_items = ", ".join([f"{item['quantity']}x {item.get('variant_title', item['title'])}" for item in order.get("line_items", [])])
 
-            # Save to Google Sheets
+            # Save to database ONLY
+            conn = sqlite3.connect(DB_FILE)
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT OR IGNORE INTO orders (
+                    created_at, order_id, shipping_name, shipping_phone,
+                    shipping_address1, total_price, city, line_items, exported
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)
+            ''', (created_at, order_name, shipping_name, shipping_phone, shipping_address1, total_price, city, line_items))
+            conn.commit()
+            conn.close()
+
+            logging.info(f"✅ Order {order_name} saved to database")
+
+        except Exception as e:
+            logging.error(f"❌ Failed to save order {order_name}: {e}")
+
+    else:
+        logging.info(f"🚫 Order {order_name} skipped — conditions not met")
+
+    return JSONResponse(content={"success": True})
+
+
+@app.post("/process-orders-to-sheet")
+async def process_orders_to_sheet():
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM orders WHERE exported = 0')
+        unsent_orders = cursor.fetchall()
+
+        if not unsent_orders:
+            logging.info("ℹ️ No new orders to export.")
+            return JSONResponse(content={"success": True, "message": "No new orders."})
+
+        spreadsheet_id = SHOP_DOMAIN_TO_SHEET["fdd92b-2e.myshopify.com"]
+
+        for order in unsent_orders:
+            _, created_at, order_name, shipping_name, shipping_phone, shipping_address1, total_price, city, line_items, _ = order
+
             row = [
                 created_at,
-                order_name,   # ✅ Use the nice display number (e.g., '#32467')
+                order_name,
                 shipping_name,
                 shipping_phone,
                 shipping_address1,
@@ -211,27 +199,14 @@ async def webhook_orders_updated(request: Request):
                 body={"values": [row]}
             ).execute()
 
-            # Save to SQLite database
-            conn = sqlite3.connect(DB_FILE)
-            cursor = conn.cursor()
-            cursor.execute(''' 
-                INSERT OR IGNORE INTO orders (
-                    created_at, order_id, shipping_name, shipping_phone,
-                    shipping_address1, total_price, city, line_items
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (created_at, order_name, shipping_name, shipping_phone, shipping_address1, total_price, city, line_items))
+            cursor.execute('UPDATE orders SET exported = 1 WHERE order_id = ?', (order_name,))
             conn.commit()
-            conn.close()
-            logging.info(f"✅ Order {order_name} saved to database")
 
-            # Tag order in Shopify (must use real ID!)
-            store = STORES[0]
-            add_tag_to_order(order_id, store)
+        conn.close()
 
-        except Exception as e:
-            logging.error(f"❌ Failed to export order {order_name}: {e}")
+        logging.info(f"✅ Exported {len(unsent_orders)} orders to Google Sheets.")
+        return JSONResponse(content={"success": True, "exported": len(unsent_orders)})
 
-    else:
-        logging.info(f"🚫 Order {order_name} skipped — conditions not met")
-
-    return JSONResponse(content={"success": True})
+    except Exception as e:
+        logging.error(f"❌ Failed to process orders: {e}")
+        return JSONResponse(content={"success": False, "error": str(e)})
