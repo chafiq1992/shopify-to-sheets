@@ -1,7 +1,5 @@
 import json
 import os
-import hashlib
-import hmac
 import base64
 import tempfile
 import logging
@@ -15,8 +13,6 @@ from googleapiclient.discovery import build
 # === CONFIG ===
 TRIGGER_TAG = "pc"
 EXTRACTED_TAG = "1"
-SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
-
 SHOP_DOMAIN_TO_SHEET = {
     "fdd92b-2e.myshopify.com": os.getenv("SHEET_IRRANOVA_ID")
 }
@@ -51,11 +47,6 @@ sheets_service = build("sheets", "v4", credentials=credentials)
 app = FastAPI()
 
 # === HELPERS ===
-def verify_shopify_webhook(data, hmac_header):
-    digest = hmac.new(SHOPIFY_WEBHOOK_SECRET.encode("utf-8"), data, hashlib.sha256).digest()
-    computed_hmac = base64.b64encode(digest).decode()
-    return hmac.compare_digest(computed_hmac, hmac_header)
-
 def format_price(price):
     try:
         return str(int(float(price)))
@@ -103,22 +94,16 @@ def add_tag_to_order(order_id, store):
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(
     request: Request,
-    x_shopify_shop_domain: str = Header(None),
-    x_shopify_hmac_sha256: str = Header(None)
+    x_shopify_shop_domain: str = Header(None)
 ):
     if not x_shopify_shop_domain or x_shopify_shop_domain not in SHOP_DOMAIN_TO_SHEET:
         raise HTTPException(status_code=400, detail="Unknown or missing shop domain")
 
     body = await request.body()
-
-    if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
-        raise HTTPException(status_code=401, detail="Invalid HMAC signature")
-
     order = json.loads(body)
     order_id = str(order.get("name", "")).strip()
     logging.info(f"🔔 Webhook received for order: {order_id}")
 
-    # Basic order fields
     fulfillment_status = (order.get("fulfillment_status") or "").lower()
     cancelled = order.get("cancelled_at")
     closed = order.get("closed_at")
@@ -126,7 +111,6 @@ async def webhook_orders_updated(
     tags_str = order.get("tags", "")
     tags = [t.strip().lower() for t in tags_str.split(",")]
 
-    # Condition filters
     if (
         fulfillment_status != "fulfilled" and
         not cancelled and
@@ -173,7 +157,6 @@ async def webhook_orders_updated(
                 body={"values": [row]}
             ).execute()
 
-            # Add extracted tag "1" to Shopify
             store = STORES[0]
             add_tag_to_order(order_id, store)
 
