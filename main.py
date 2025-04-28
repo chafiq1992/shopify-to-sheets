@@ -92,13 +92,7 @@ def add_tag_to_order(order_id, store):
         logging.error(f"❌ Exception tagging order {order_id}: {e}")
 
 @app.post("/webhook/orders-updated")
-async def webhook_orders_updated(
-    request: Request,
-    x_shopify_shop_domain: str = Header(None)
-):
-    if not x_shopify_shop_domain or x_shopify_shop_domain not in SHOP_DOMAIN_TO_SHEET:
-        raise HTTPException(status_code=400, detail="Unknown or missing shop domain")
-
+async def webhook_orders_updated(request: Request):
     body = await request.body()
     order = json.loads(body)
     order_id = str(order.get("name", "")).strip()
@@ -122,7 +116,8 @@ async def webhook_orders_updated(
         logging.info(f"✅ Order {order_id} passed filters — exporting and tagging...")
 
         try:
-            spreadsheet_id = SHOP_DOMAIN_TO_SHEET[x_shopify_shop_domain]
+            # DIRECTLY hardcode spreadsheet_id since you only have 1 store
+            spreadsheet_id = SHOP_DOMAIN_TO_SHEET["fdd92b-2e.myshopify.com"]
 
             created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
             shipping_address = order.get("shipping_address", {})
