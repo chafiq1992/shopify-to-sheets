@@ -147,34 +147,37 @@ async def webhook_orders_updated(request: Request):
     body = await request.body()
     order = json.loads(body)
 
-    order_name = str(order.get("name", "")).strip()  # For display in Google Sheets
-    order_id = str(order.get("id", "")).strip()  # For Shopify tagging
+    order_name = str(order.get("name", "")).strip()  # ➔ For Google Sheet
+    order_id = str(order.get("id", "")).strip()       # ➔ For Shopify tagging
 
     logging.info(f"🔔 Webhook received for order: {order_name} (ID: {order_id})")
+
+    # Extract tags and other order details
+    tags_str = order.get("tags", "")
+    tags = [t.strip().lower() for t in tags_str.split(",")]
+
+    # If the order already has the '1' tag, skip it.
+    if EXTRACTED_TAG in tags:
+        logging.info(f"ℹ️ Order {order_name} already has tag '1'. Skipping...")
+        return JSONResponse(content={"success": True})
 
     fulfillment_status = (order.get("fulfillment_status") or "").lower()
     cancelled = order.get("cancelled_at")
     closed = order.get("closed_at")
     financial_status = (order.get("financial_status") or "").lower()
-    tags_str = order.get("tags", "")
-    tags = [t.strip().lower() for t in tags_str.split(",")]
-
-    # Skip if 'EXTRACTED_TAG' (tag "1") is already present
-    if EXTRACTED_TAG.lower() in tags:
-        logging.info(f"🚫 Order {order_name} already has tag '{EXTRACTED_TAG}', skipping export.")
-        return JSONResponse(content={"success": True})
 
     if (
         fulfillment_status != "fulfilled" and
         not cancelled and
         not closed and
         financial_status in ["paid", "pending", "unpaid"] and
-        TRIGGER_TAG.lower() in tags
+        TRIGGER_TAG in tags and
+        EXTRACTED_TAG not in tags
     ):
         logging.info(f"✅ Order {order_name} passed filters — exporting and tagging...")
 
         try:
-            # Extract order fields for Google Sheets and SQLite database
+            # Extract order fields
             spreadsheet_id = SHOP_DOMAIN_TO_SHEET["fdd92b-2e.myshopify.com"]
 
             created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
@@ -190,7 +193,7 @@ async def webhook_orders_updated(request: Request):
             # Save to Google Sheets
             row = [
                 created_at,
-                order_name,  # Display order number (#32467)
+                order_name,   # ✅ Use the nice display number (e.g., '#32467')
                 shipping_name,
                 shipping_phone,
                 shipping_address1,
@@ -211,7 +214,7 @@ async def webhook_orders_updated(request: Request):
             # Save to SQLite database
             conn = sqlite3.connect(DB_FILE)
             cursor = conn.cursor()
-            cursor.execute('''
+            cursor.execute(''' 
                 INSERT OR IGNORE INTO orders (
                     created_at, order_id, shipping_name, shipping_phone,
                     shipping_address1, total_price, city, line_items
@@ -221,12 +224,12 @@ async def webhook_orders_updated(request: Request):
             conn.close()
             logging.info(f"✅ Order {order_name} saved to database")
 
-            # Tag order in Shopify (must use real Shopify ID)
+            # Tag order in Shopify (must use real ID!)
             store = STORES[0]
             add_tag_to_order(order_id, store)
 
         except Exception as e:
-            logging.error(f"❌ Failed to export or tag order {order_name}: {e}")
+            logging.error(f"❌ Failed to export order {order_name}: {e}")
 
     else:
         logging.info(f"🚫 Order {order_name} skipped — conditions not met")
