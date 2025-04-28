@@ -146,7 +146,7 @@ def add_tag_to_order(order_id, store):
 async def webhook_orders_updated(request: Request):
     body = await request.body()
     order = json.loads(body)
-    order_id = str(order.get("name", "")).strip()
+    order_id = str(order.get("id", "")).strip()
     logging.info(f"🔔 Webhook received for order: {order_id}")
 
     fulfillment_status = (order.get("fulfillment_status") or "").lower()
