@@ -183,12 +183,12 @@ async def webhook_orders_updated(request: Request):
     # Log tags for debugging
     logging.info(f"🏷️ Order {order_name} tags: {tags}")
 
-    # ===== STRICT TAG CHECK =====
+    # Check if the order already has tag '1'
     if EXTRACTED_TAG in tags:
         logging.info(f"🚫 Order {order_name} already has tag '1' — skipping export and tagging.")
         return JSONResponse(content={"success": True})
 
-    # ===== MAIN FILTER CONDITIONS =====
+    # Main filter conditions (only process if it has 'pc' and does not have tag '1')
     if (
         fulfillment_status != "fulfilled" and
         not cancelled and
@@ -199,6 +199,7 @@ async def webhook_orders_updated(request: Request):
         logging.info(f"✅ Order {order_name} passed filters — exporting and tagging...")
 
         try:
+            # Extract order details for export
             spreadsheet_id = SHOP_DOMAIN_TO_SHEET["fdd92b-2e.myshopify.com"]
 
             created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
@@ -248,6 +249,7 @@ async def webhook_orders_updated(request: Request):
             logging.error(f"❌ Failed to process order {order_name}: {e}")
 
     else:
-        logging.info(f"🚫 Order {order_name} skipped — conditions not met (TRIGGER_TAG missing or bad status).")
+        logging.info(f"🚫 Order {order_name} skipped — conditions not met (either tag 'pc' missing or tag '1' already exists).")
 
     return JSONResponse(content={"success": True})
+
