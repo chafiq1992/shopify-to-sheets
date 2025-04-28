@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import certifi
+import sqlite3
 
 # === CONFIG ===
 TRIGGER_TAG = "pc"
@@ -27,6 +28,10 @@ STORES = [
         "password": os.getenv("SHOPIFY_PASSWORD_IRRANOVA")
     }
 ]
+
+# === DATABASE INIT ===
+DB_FILE = "orders.db"
+
 
 # === LOGGER ===
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s", force=True)
@@ -48,6 +53,29 @@ sheets_service = build("sheets", "v4", credentials=credentials)
 app = FastAPI()
 
 # === HELPERS ===
+
+def init_db():
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS orders (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            created_at TEXT,
+            order_id TEXT UNIQUE,
+            shipping_name TEXT,
+            shipping_phone TEXT,
+            shipping_address1 TEXT,
+            total_price TEXT,
+            city TEXT,
+            line_items TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+
 def format_price(price):
     try:
         return str(int(float(price)))
@@ -125,7 +153,7 @@ async def webhook_orders_updated(request: Request):
         logging.info(f"✅ Order {order_id} passed filters — exporting and tagging...")
 
         try:
-            # DIRECTLY hardcode spreadsheet_id since you only have 1 store
+            # Extract order fields
             spreadsheet_id = SHOP_DOMAIN_TO_SHEET["fdd92b-2e.myshopify.com"]
 
             created_at = datetime.strptime(order["created_at"], '%Y-%m-%dT%H:%M:%S%z').strftime('%Y-%m-%d %H:%M')
@@ -141,6 +169,7 @@ async def webhook_orders_updated(request: Request):
                 for item in order.get("line_items", [])
             ])
 
+            # Save to Google Sheets
             row = [
                 created_at,
                 order_id,
@@ -161,6 +190,20 @@ async def webhook_orders_updated(request: Request):
                 body={"values": [row]}
             ).execute()
 
+            # Save to SQLite
+            conn = sqlite3.connect(DB_FILE)
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT OR IGNORE INTO orders (
+                    created_at, order_id, shipping_name, shipping_phone,
+                    shipping_address1, total_price, city, line_items
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (created_at, order_id, shipping_name, shipping_phone, shipping_address1, total_price, city, line_items))
+            conn.commit()
+            conn.close()
+            logging.info(f"✅ Order {order_id} saved to database")
+
+            # Tag order
             store = STORES[0]
             add_tag_to_order(order_id, store)
 
