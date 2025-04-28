@@ -93,7 +93,7 @@ app = FastAPI()
 orders_cache = {}
 orders_cache_lock = Lock()
 last_fetch_time = {}
-CACHE_TTL_SECONDS = 120  # 2 minutes
+CACHE_TTL_SECONDS = 120  # refresh cache every 2 min
 
 def get_cached_existing_orders(spreadsheet_id):
     now = time.time()
@@ -111,7 +111,7 @@ def get_cached_existing_orders(spreadsheet_id):
             ).execute()
             rows = result.get("values", [])
             existing_order_ids = set()
-            for row in rows[1:]:  # Skip header
+            for row in rows[1:]:
                 if len(row) > 1:
                     existing_order_ids.add(row[1].strip())
             orders_cache[spreadsheet_id] = existing_order_ids
@@ -163,6 +163,16 @@ def get_corrected_city(input_city, address_hint=""):
         if city in address_hint.lower():
             return city.title(), f"✅ Guessed from address: '{input_city}' → '{city.title()}'"
     return input_city, f"🛑 Could not match: '{input_city}'"
+
+def is_fulfilled(order_id, shop_domain, api_key, password):
+    try:
+        url = f"https://{api_key}:{password}@{shop_domain}/admin/api/2023-04/orders.json?name={order_id}"
+        response = requests.get(url, timeout=10)
+        orders = response.json().get("orders", [])
+        return orders and orders[0].get("fulfillment_status") == "fulfilled"
+    except Exception as e:
+        logging.error(f"⚠️ Failed to fetch order {order_id} from {shop_domain}: {e}")
+        return False
 
 # === WEBHOOK HANDLER ===
 @app.post("/webhook/orders-updated")
