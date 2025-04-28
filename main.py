@@ -155,11 +155,7 @@ async def webhook_orders_updated(
 
     spreadsheet_id = SHOP_DOMAIN_TO_SHEET[x_shopify_shop_domain]
     body = await request.body()
-    
-    # ✅ Verify Shopify HMAC before parsing JSON (optional security improvement)
-    if not verify_shopify_webhook(body, x_shopify_hmac_sha256):
-        raise HTTPException(status_code=401, detail="Invalid HMAC signature")
-    
+
     order = json.loads(body)
 
     order_id = str(order.get("name", "")).strip()
@@ -211,6 +207,7 @@ async def webhook_orders_updated(
     if order_id in existing_order_ids:
         logging.info(f"⚠️ Order {order_id} already exists in sheet — skipping")
         return JSONResponse(content={"skipped": True})
+
 
 
     # Validate fulfillment, cancellation, or closure status
