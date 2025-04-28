@@ -109,7 +109,7 @@ async def webhook_orders_updated(request: Request):
         fulfillment_status != "fulfilled" and
         not cancelled and
         not closed and
-        financial_status == "paid" and
+        financial_status in ["paid", "pending", "unpaid"] and
         TRIGGER_TAG in tags and
         EXTRACTED_TAG not in tags
     ):
