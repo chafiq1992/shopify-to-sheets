@@ -167,11 +167,12 @@ async def webhook_orders_updated(request: Request):
     body = await request.body()
     order = json.loads(body)
 
-    order_name = str(order.get("name", "")).strip()  # ➔ For Google Sheet
-    order_id = str(order.get("id", "")).strip()       # ➔ For Shopify tagging
+    order_name = str(order.get("name", "")).strip()  # For Google Sheet
+    order_id = str(order.get("id", "")).strip()       # For Shopify tagging
 
     logging.info(f"🔔 Webhook received for order: {order_name} (ID: {order_id})")
 
+    # Extract order fields
     fulfillment_status = (order.get("fulfillment_status") or "").lower()
     cancelled = order.get("cancelled_at")
     closed = order.get("closed_at")
@@ -180,15 +181,20 @@ async def webhook_orders_updated(request: Request):
     tags = [t.strip().lower() for t in tags_str.split(",")]
 
     # Log tags for debugging
-    logging.info(f"Order tags: {tags}")
+    logging.info(f"🏷️ Order {order_name} tags: {tags}")
 
+    # ===== STRICT TAG CHECK =====
+    if EXTRACTED_TAG in tags:
+        logging.info(f"🚫 Order {order_name} already has tag '1' — skipping export and tagging.")
+        return JSONResponse(content={"success": True})
+
+    # ===== MAIN FILTER CONDITIONS =====
     if (
         fulfillment_status != "fulfilled" and
         not cancelled and
         not closed and
         financial_status in ["paid", "pending", "unpaid"] and
-        TRIGGER_TAG in tags and
-        EXTRACTED_TAG not in tags  # Only process if EXTRACTED_TAG is not found
+        TRIGGER_TAG in tags  # Check 'pc' tag is present
     ):
         logging.info(f"✅ Order {order_name} passed filters — exporting and tagging...")
 
@@ -203,9 +209,12 @@ async def webhook_orders_updated(request: Request):
             city = shipping_address.get("city", "")
             raw_price = order.get("total_outstanding") or order.get("presentment_total_price_set", {}).get("shop_money", {}).get("amount", "")
             total_price = format_price(raw_price)
-            line_items = ", ".join([f"{item['quantity']}x {item.get('variant_title', item['title'])}" for item in order.get("line_items", [])])
+            line_items = ", ".join([
+                f"{item['quantity']}x {item.get('variant_title', item['title'])}"
+                for item in order.get("line_items", [])
+            ])
 
-            # Save to Google Sheets
+            # === Save to Google Sheet
             row = [created_at, order_name, shipping_name, shipping_phone, shipping_address1, total_price, city, line_items]
             row = (row + [""] * 12)[:12]
 
@@ -216,8 +225,9 @@ async def webhook_orders_updated(request: Request):
                 insertDataOption="INSERT_ROWS",
                 body={"values": [row]}
             ).execute()
+            logging.info(f"✅ Order {order_name} saved to Google Sheet.")
 
-            # Save to SQLite database
+            # === Save to local SQLite Database
             conn = sqlite3.connect(DB_FILE)
             cursor = conn.cursor()
             cursor.execute('''
@@ -228,15 +238,16 @@ async def webhook_orders_updated(request: Request):
             ''', (created_at, order_name, shipping_name, shipping_phone, shipping_address1, total_price, city, line_items))
             conn.commit()
             conn.close()
+            logging.info(f"✅ Order {order_name} saved to database.")
 
-            # Tag order in Shopify (must use real ID!)
+            # === Add Tag '1' to Shopify Order
             store = STORES[0]
             add_tag_to_order(order_id, store)
 
         except Exception as e:
-            logging.error(f"❌ Failed to export order {order_name}: {e}")
+            logging.error(f"❌ Failed to process order {order_name}: {e}")
 
     else:
-        logging.info(f"🚫 Order {order_name} skipped — conditions not met")
+        logging.info(f"🚫 Order {order_name} skipped — conditions not met (TRIGGER_TAG missing or bad status).")
 
     return JSONResponse(content={"success": True})
