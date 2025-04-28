@@ -18,9 +18,9 @@ from googleapiclient.discovery import build
 TRIGGER_TAG = "pc"
 SHOPIFY_WEBHOOK_SECRET = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
 
+# Only keep "irranova" store
 SHOP_DOMAIN_TO_SHEET = {
-    "fdd92b-2e.myshopify.com": os.getenv("SHEET_IRRANOVA_ID"),
-    "nouralibas.myshopify.com": os.getenv("SHEET_IRRAKIDS_ID")
+    "fdd92b-2e.myshopify.com": os.getenv("SHEET_IRRANOVA_ID")
 }
 
 STORES = [
@@ -30,13 +30,6 @@ STORES = [
         "shop_domain": "fdd92b-2e.myshopify.com",
         "api_key": os.getenv("SHOPIFY_API_KEY_IRRANOVA"),
         "password": os.getenv("SHOPIFY_PASSWORD_IRRANOVA")
-    },
-    {
-        "name": "irrakids",
-        "spreadsheet_id": os.getenv("SHEET_IRRAKIDS_ID"),
-        "shop_domain": "nouralibas.myshopify.com",
-        "api_key": os.getenv("SHOPIFY_API_KEY_IRRAKIDS"),
-        "password": os.getenv("SHOPIFY_PASSWORD_IRRAKIDS")
     }
 ]
 
@@ -143,7 +136,7 @@ def is_fulfilled(order_id, shop_domain, api_key, password):
     except Exception as e:
         logging.error(f"⚠️ Failed to fetch order {order_id} from {shop_domain}: {e}")
         return False
-            
+
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(
     request: Request,
@@ -208,8 +201,6 @@ async def webhook_orders_updated(
         logging.info(f"⚠️ Order {order_id} already exists in sheet — skipping")
         return JSONResponse(content={"skipped": True})
 
-
-
     # Validate fulfillment, cancellation, or closure status
     fulfillment_status = (order.get("fulfillment_status") or "").strip().lower()
     cancelled = order.get("cancelled_at")
@@ -238,7 +229,7 @@ async def webhook_orders_updated(
         total_price = format_price(raw_price)
         notes = order.get("note", "")
         tags = order.get("tags", "")
-        line_items = ", ".join([
+        line_items = ", ".join([ 
             f"{item['quantity']}x {item.get('variant_title', item['title'])}"
             for item in order.get("line_items", [])
         ])
@@ -269,37 +260,6 @@ async def webhook_orders_updated(
 
         logging.info(f"✅ Exported order {order_id}")
 
-
-        # === Force default (white) background for the newly inserted row ===
-        try:
-            result = sheets_service.spreadsheets().values().get(
-                spreadsheetId=spreadsheet_id,
-                range="Sheet1!A:L"
-            ).execute()
-
-            new_row_index = len(result.get("values", []))  # Index of last row added
-
-            sheets_service.spreadsheets().batchUpdate(
-                spreadsheetId=spreadsheet_id,
-                body={
-                    "requests": [
-                        {
-                            "updateCells": {
-                                "range": {
-                                    "sheetId": 0,
-                                    "startRowIndex": new_row_index - 1,
-                                    "endRowIndex": new_row_index
-                                },
-                                "fields": "userEnteredFormat"
-                            }
-                        }
-                    ]
-                }
-            ).execute()
-        except Exception as e:
-            logging.warning(f"⚠️ Failed to clear formatting for new row: {e}")
-
-        logging.info(f"✅ Exported order {order_id}")
     except Exception as e:
         logging.error(f"❌ Error exporting order {order_id}: {e}")
 
