@@ -96,30 +96,32 @@ def format_phone(phone: str) -> str:
 
 def add_tag_to_order(order_id, store):
     try:
-        url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders.json?name={order_id}"
-        response = requests.get(url, verify=False)  # 🚨 Force SSL ignore here temporarily
-        orders = response.json().get("orders", [])
-        if not orders:
+        # 🛠 Correct URL directly by ID
+        url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders/{order_id}.json"
+        response = requests.get(url, verify=certifi.where())
+        order = response.json().get("order")
+
+        if not order:
             logging.error(f"❌ Order {order_id} not found")
             return
 
-        order = orders[0]
         current_tags = order.get("tags", "")
         tag_list = [tag.strip() for tag in current_tags.split(",") if tag.strip()]
 
         if EXTRACTED_TAG not in tag_list:
             tag_list.append(EXTRACTED_TAG)
 
-            update_url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders/{order['id']}.json"
+            update_url = f"https://{store['api_key']}:{store['password']}@{store['shop_domain']}/admin/api/2023-04/orders/{order_id}.json"
             payload = {
                 "order": {
+                    "id": order["id"],
                     "tags": ", ".join(tag_list)
                 }
             }
-            update_response = requests.put(update_url, json=payload, verify=False)  # 🚨 Force SSL ignore here too
+            update_response = requests.put(update_url, json=payload, verify=certifi.where())
 
             if update_response.status_code == 200:
-                logging.info(f"✅ Only added tag '1' to order {order_id}")
+                logging.info(f"✅ Added tag '1' to order {order_id}")
             else:
                 logging.error(f"❌ Failed to add tag to {order_id}: {update_response.text}")
         else:
@@ -127,6 +129,7 @@ def add_tag_to_order(order_id, store):
 
     except Exception as e:
         logging.error(f"❌ Exception while tagging order {order_id}: {e}")
+
 
 @app.post("/webhook/orders-updated")
 async def webhook_orders_updated(request: Request):
